@@ -1,0 +1,7 @@
+# Visual Studio / VSCode
+.vs/
+build/
+*.user
+*.suo
+*.exe
+*.obj
