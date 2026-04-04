@@ -250,72 +250,75 @@ void ImageViewer::ViewerWidgetWheel(ViewerWidget* w, QEvent* event)
 {
 	QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
 	
-	bool isPolygonthere = !w->getPolygonPoints().isEmpty();
-	bool isLinethere = (w->getDrawLineBegin() != w->getDrawLineEnd());
-	bool isCirclethere = (w->getCircleRadius() > 0);
+	////bool isPolygonthere = !w->getPolygonPoints().isEmpty();
+	////bool isLinethere = (w->getDrawLineBegin() != w->getDrawLineEnd());
+	////bool isCirclethere = (w->getCircleRadius() > 0);
 
-	if (!isPolygonthere && !isLinethere && !isCirclethere) return;
+	////if (!isPolygonthere && !isLinethere && !isCirclethere) return;
 
 	int angel_delta = wheelEvent->angleDelta().y();
 	if (angel_delta == 0) return;
-	double scale_unit = (angel_delta > 0) ? 1.25 : 0.75;
+	int index = ui->comboBoxLineAlg->currentIndex();
 
-	w->clear();
+	w->WheelMove(QPoint(0, angel_delta), index, globalColor);
+	////double scale_unit = (angel_delta > 0) ? 1.25 : 0.75;
 
-	// LINE WHEEL
-	if (isLinethere)
-	{
-		QPoint p1 = w->getDrawLineBegin();
-		QPoint p2 = w->getDrawLineEnd();
+	////w->clear();
 
-		double X = p1.x() + (p2.x() - p1.x()) * scale_unit;
-		double Y = p1.y() + (p2.y() - p1.y()) * scale_unit;
-		QPoint scaledLine(qRound(X), qRound(Y));
+	////// LINE WHEEL
+	////if (isLinethere)
+	////{
+	////	QPoint p1 = w->getDrawLineBegin();
+	////	QPoint p2 = w->getDrawLineEnd();
 
-		w->setDrawLineEnd(scaledLine);
+	////	double X = p1.x() + (p2.x() - p1.x()) * scale_unit;
+	////	double Y = p1.y() + (p2.y() - p1.y()) * scale_unit;
+	////	QPoint scaledLine(qRound(X), qRound(Y));
 
-		switch (ui->comboBoxLineAlg->currentIndex())
-		{
-		case 0:
-			w->drawLineDDA(p1, scaledLine, globalColor);
-			break;
-		case 1:
-			w->drawLineBresenham(p1, scaledLine, globalColor);
-			break;
-		}
-	}
+	////	w->setDrawLineEnd(scaledLine);
 
-	// CIRCLE WHEEL
-	if (isCirclethere)
-	{
-		int newRadius = qRound(w->getCircleRadius() * scale_unit);
-		if (newRadius < 1) newRadius = 1;
+	////	switch (ui->comboBoxLineAlg->currentIndex())
+	////	{
+	////	case 0:
+	////		w->drawLineDDA(p1, scaledLine, globalColor);
+	////		break;
+	////	case 1:
+	////		w->drawLineBresenham(p1, scaledLine, globalColor);
+	////		break;
+	////	}
+	////}
 
-		w->setCircleRadius(newRadius);
-		w->drawCircleBresenham(w->getDrawCircleCenter(), newRadius, globalColor);
-	}
+	////// CIRCLE WHEEL
+	////if (isCirclethere)
+	////{
+	////	int newRadius = qRound(w->getCircleRadius() * scale_unit);
+	////	if (newRadius < 1) newRadius = 1;
 
-	// POLYGON WHEEL
-	if (isPolygonthere)
-	{
-		QVector<QPoint> polygonPoints = w->getPolygonPoints(); 
-		QPointF point1 = polygonPoints[0];                  
+	////	w->setCircleRadius(newRadius);
+	////	w->drawCircleBresenham(w->getDrawCircleCenter(), newRadius, globalColor);
+	////}
 
-		int size = polygonPoints.size();
+	////// POLYGON WHEEL
+	////if (isPolygonthere)
+	////{
+	////	QVector<QPoint> polygonPoints = w->getPolygonPoints(); 
+	////	QPointF point1 = polygonPoints[0];                  
 
-		for (int i = 1; i < size; i++)
-		{
-			QPointF point = polygonPoints[i];
-			double X = point1.x() + (point.x() - point1.x()) * scale_unit;
-			double Y = point1.y() + (point.y() - point1.y()) * scale_unit;
-			polygonPoints[i] = QPoint(qRound(X), qRound(Y));
-		}
+	////	int size = polygonPoints.size();
 
-		w->getPolygonPoints() = polygonPoints;
-		w->drawPolygon(polygonPoints, globalColor, true);
-	}
+	////	for (int i = 1; i < size; i++)
+	////	{
+	////		QPointF point = polygonPoints[i];
+	////		double X = point1.x() + (point.x() - point1.x()) * scale_unit;
+	////		double Y = point1.y() + (point.y() - point1.y()) * scale_unit;
+	////		polygonPoints[i] = QPoint(qRound(X), qRound(Y));
+	////	}
 
-	w->update();
+	////	w->getPolygonPoints() = polygonPoints;
+	////	w->drawPolygon(polygonPoints, globalColor, true);
+	////}
+
+	////w->update();
 }
 
 void ImageViewer::on_DegeeresDoubleSpinBox_valueChanged(double value)

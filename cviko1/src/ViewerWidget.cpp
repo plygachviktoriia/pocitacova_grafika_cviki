@@ -392,6 +392,45 @@ void ViewerWidget::MoveObjects(QPoint delta, int index, QColor color)
 	update();
 }
 
+void ViewerWidget::WheelMove(QPoint angle_delta, int index, QColor color)
+{
+	//LINE
+	QPoint p1 = getDrawLineBegin();
+	QPoint p2 = getDrawLineEnd();
+
+	double scale_unit = (angle_delta.y() > 0) ? 1.25 : 0.75;    //vertikal 
+	double X = p1.x() + (p2.x() - p1.x()) * scale_unit;
+	double Y = p1.y() + (p2.y() - p1.y()) * scale_unit;
+
+	QPoint scaledLine(qRound(X), qRound(Y));
+	setDrawLineEnd(scaledLine);
+
+	//CIRCLE
+	int radius_new = qRound(getCircleRadius() * scale_unit);
+	if (radius_new < 1) radius_new = 1;
+	setCircleRadius(radius_new);
+
+	//POLYGON
+	QVector<QPoint> polygonPoints = getPolygonPoints();
+	QPointF point1 = polygonPoints[0];
+
+	int size = polygonPoints.size();
+
+	for (int i = 1; i < size; i++)
+	{
+		QPoint point = polygonPoints[i];
+
+		double X = point1.x() + (point.x() - point1.x()) * scale_unit;
+		double Y = point1.y() + (point.y() - point1.y()) * scale_unit;
+		polygonPoints[i] = QPoint(qRound(X), qRound(Y));
+	}
+	getPolygonPoints() = polygonPoints;
+
+	clear();
+	DrawObjects(color, index);
+	update();
+}
+
 //Slots
 void ViewerWidget::paintEvent(QPaintEvent* event)
 {

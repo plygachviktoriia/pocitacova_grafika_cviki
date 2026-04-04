@@ -98,6 +98,8 @@ public:
 
 	void DrawObjects(QColor color, int index);
 	void MoveObjects(QPoint delta, int index, QColor color);
+	
+	void WheelMove(QPoint angel_delta, int index, QColor);
 
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
