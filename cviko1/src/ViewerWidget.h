@@ -96,6 +96,9 @@ public:
 	void clearPolygon() { polygonPoints.clear(); polygonActive = false; polygonFinished = false; }
 	void finishPolygon() { polygonFinished = true; polygonActive = false; }
 
+	void DrawObjects(QColor color, int index);
+	void MoveObjects(QPoint delta, int index, QColor color);
+
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
 };

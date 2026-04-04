@@ -342,6 +342,56 @@ void ViewerWidget::drawPolygon(const QVector<QPoint>& points, QColor color, bool
 	update();
 }
 
+void ViewerWidget::DrawObjects(QColor color, int index)
+{
+	switch (index)
+	{
+	case 0:
+		drawLineDDA(getDrawLineBegin(), getDrawLineEnd(), color);
+		break;
+
+	case 1:
+		drawLineBresenham(getDrawLineBegin(), getDrawLineEnd(), color);
+		break;
+	}
+
+	drawCircleBresenham(getDrawCircleCenter(), getCircleRadius(), color);
+
+	drawPolygon(polygonPoints, color, true);
+}
+
+void ViewerWidget::MoveObjects(QPoint delta, int index, QColor color)
+{
+	// LINE
+	QPoint p1 = getDrawLineBegin();
+	QPoint p2 = getDrawLineEnd();
+
+	QPoint p1_new = p1 + delta;
+	QPoint p2_new = p2 + delta;
+
+	setDrawLineBegin(p1_new);
+	setDrawLineEnd(p2_new);
+
+	// CIRCLE 
+	QPoint center = getDrawCircleCenter();
+	QPoint center_new = center + delta;
+
+	setDrawCircleCenter(center_new);
+
+	// POLYGON 
+	QVector<QPoint>& polygonPoints = getPolygonPoints();
+	int size = polygonPoints.size();
+
+	for (int i = 0; i < size; i++)
+	{
+		polygonPoints[i] += delta;
+	}
+
+	clear();
+	DrawObjects(color, index);
+	update();
+}
+
 //Slots
 void ViewerWidget::paintEvent(QPaintEvent* event)
 {

@@ -116,33 +116,33 @@ void ImageViewer::on_ResetpushButton_clicked()
 
 void ImageViewer::ViewerWidgetMouseButtonPress(ViewerWidget* w, QEvent* event)
 {
-	QMouseEvent* e = static_cast<QMouseEvent*>(event);
+	QMouseEvent* current = static_cast<QMouseEvent*>(event);
 	
 	// POLYGON PRESS
 	if (w->activePolygon()) 
 	{ 
-		if (e->button() == Qt::LeftButton) 
+		if (current->button() == Qt::LeftButton) 
 		{ 
-			QPoint p = e->pos(); 
+			QPoint point = current->pos(); 
 
 			if (w->getPolygonPoints().isEmpty()) 
 			{ 
-				w->addPolygonPoint(p); 
-				w->setPixel(p.x(), p.y(), globalColor); 
+				w->addPolygonPoint(point); 
+				w->setPixel(point.x(), point.y(), globalColor); 
 			} 
 			else { 
 				QPoint prev = w->getPolygonPoints().last(); 
-				w->addPolygonPoint(p); 
-				w->drawLineDDA(prev, p, globalColor); 
+				w->addPolygonPoint(point); 
+				w->drawLineDDA(prev, point, globalColor); 
 			} 
 			w->update(); 
 		} 
-		else if (e->button() == Qt::RightButton) 
+		else if (current->button() == Qt::RightButton) 
 		{ 
-			const QVector<QPoint>& pts = w->getPolygonPoints(); 
-			if (pts.size() >= 3) 
+			QVector<QPoint>& pointsPolygon = w->getPolygonPoints(); 
+			if (pointsPolygon.size() >= 3) 
 			{ 
-				w->drawLineDDA(pts.last(), pts.first(), globalColor); 
+				w->drawLineDDA(pointsPolygon.last(), pointsPolygon.first(), globalColor); 
 			
 			} 
 			w->setPolygonActive(false); 
@@ -157,14 +157,14 @@ void ImageViewer::ViewerWidgetMouseButtonPress(ViewerWidget* w, QEvent* event)
 	{
 		if (!w->getDrawLineActivated())
 		{
-			w->setDrawLineBegin(e->pos());
+			w->setDrawLineBegin(current->pos());
 			w->setDrawLineActivated(true);
-			w->setPixel(e->pos().x(), e->pos().y(), globalColor);
+			w->setPixel(current->pos().x(), current->pos().y(), globalColor);
 			w->update();
 		}
 		else
 		{
-			w->setDrawLineEnd(e->pos());
+			w->setDrawLineEnd(current->pos());
 			w->drawLine(w->getDrawLineBegin(), w->getDrawLineEnd(), globalColor, ui->comboBoxLineAlg->currentIndex());
 			w->setDrawLineActivated(false);
 		}
@@ -176,16 +176,16 @@ void ImageViewer::ViewerWidgetMouseButtonPress(ViewerWidget* w, QEvent* event)
 	{
 		if (!w->getDrawCircleActivated())
 		{
-			w->setDrawCircleCenter(e->pos());
+			w->setDrawCircleCenter(current->pos());
 			w->setDrawCircleActivated(true);
 
-			w->setPixel(e->pos().x(), e->pos().y(), globalColor);
+			w->setPixel(current->pos().x(), current->pos().y(), globalColor);
 			w->update();
 		}
 		else
 		{
 			QPoint center = w->getDrawCircleCenter();
-			QPoint p = e->pos();
+			QPoint p = current->pos();
 
 			int dx = p.x() - center.x();
 			int dy = p.y() - center.y();
@@ -197,12 +197,12 @@ void ImageViewer::ViewerWidgetMouseButtonPress(ViewerWidget* w, QEvent* event)
 		}
 	}
 
-	if (e->button() == Qt::LeftButton &&
+	if (current->button() == Qt::LeftButton &&
 		!w->activePolygon() &&
 		!w->getDrawLineActivated() &&
 		!w->getDrawCircleActivated())
 	{
-		w->startDragging = e->pos();
+		w->startDragging = current->pos();
 		w->dragging = true;
 	}
 }
@@ -216,24 +216,11 @@ void ImageViewer::ViewerWidgetMouseButtonRelease(ViewerWidget* w, QEvent* event)
 
 	QPoint delta = e->pos() - w->startDragging;
 
-	// POLYGON RELEASE
-	for (QPoint& pointPolygon : w->getPolygonPoints())
-	{
-		pointPolygon += delta;
-	}
-
-	// LINE REALESE
-	QPoint p1 = w->getDrawLineBegin();
-	QPoint p2 = w->getDrawLineEnd();
-
-	w->setDrawLineBegin(p1 + delta);
-	w->setDrawLineEnd(p2 + delta);
-
-	// CIRCLE RELEASE
-	QPoint center = w->getDrawCircleCenter();
-	w->setDrawCircleCenter(center + delta);
+	int index = ui->comboBoxLineAlg->currentIndex();
+	w->MoveObjects(delta, index, globalColor);
 
 	w->dragging = false;
+	w->update();
 }
 
 void ImageViewer::ViewerWidgetMouseMove(ViewerWidget* w, QEvent* event)
@@ -245,47 +232,10 @@ void ImageViewer::ViewerWidgetMouseMove(ViewerWidget* w, QEvent* event)
 
 	QPoint delta = e->pos() - w->startDragging;
 
-	w->clear();
+	int index = ui->comboBoxLineAlg->currentIndex();
+	w->MoveObjects(delta, index, globalColor);
 
-	// POLYGON
-	QVector<QPoint> polygonPoints = w->getPolygonPoints();
-	if (!polygonPoints.isEmpty())
-	{
-		QVector<QPoint> moved;
-
-		for (const QPoint& p : polygonPoints)
-			moved.append(p + delta);
-
-		w->drawPolygon(moved, globalColor, true);
-	}
-
-	// LINE
-	QPoint p1 = w->getDrawLineBegin();
-	QPoint p2 = w->getDrawLineEnd();
-
-	if (p1 != p2)
-	{
-		QPoint newP1 = p1 + delta;
-		QPoint newP2 = p2 + delta;
-
-		switch (ui->comboBoxLineAlg->currentIndex())
-		{
-		case 0:
-			w->drawLineDDA(newP1, newP2, globalColor);
-			break;
-		case 1:
-			w->drawLineBresenham(newP1, newP2, globalColor);
-			break;
-		}
-	}
-
-	// CIRCLE
-	if (w->getCircleRadius() > 0)
-	{
-		QPoint center = w->getDrawCircleCenter() + delta;
-		w->drawCircleBresenham(center, w->getCircleRadius(), globalColor);
-	}
-	w->update();
+	w->startDragging = e->pos();
 }
             
 void ImageViewer::ViewerWidgetLeave(ViewerWidget* w, QEvent* event)
