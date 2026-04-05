@@ -431,6 +431,54 @@ void ViewerWidget::WheelMove(QPoint angle_delta, int index, QColor color)
 	update();
 }
 
+void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor color)
+{
+	//LINE 
+	QPoint p1 = getDrawLineBegin();
+	QPoint p2 = originalLineEnd;
+
+	double Sx = p1.x();
+	double Sy = p1.y();
+	double x = p2.x();
+	double y = p2.y();
+	double dx, dy;
+
+	double angle = angle_rotation * M_PI / 180.0;
+	dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
+	dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
+
+	QPoint rotatedLineEnd(qRound(dx), qRound(dy));
+	setDrawLineEnd(rotatedLineEnd);
+
+	//POLYGON
+	QVector<QPoint> polygonPoints = getPolygonPoints();
+
+	QPoint point1_polygon = polygonPoints[0];
+	double Sx_polygon = point1_polygon.x();
+	double Sy_polygon = point1_polygon.y();
+
+	QVector<QPoint> rotation;
+	rotation.append(point1_polygon);
+	int size = getPolygonPoints().size();
+
+	for (int i = 1; i < size; i++)
+	{
+		QPoint polygon_point = polygonPoints[i];
+		double x = polygon_point.x();
+		double y = polygon_point.y();
+		double dx, dy;
+
+		dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
+		dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
+
+		rotation.append(QPoint((int)dx, (int)dy));
+	}
+
+	clear();
+	DrawObjects(color, index);
+	update();
+}
+
 //Slots
 void ViewerWidget::paintEvent(QPaintEvent* event)
 {

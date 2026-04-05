@@ -249,76 +249,12 @@ void ImageViewer::ViewerWidgetEnter(ViewerWidget* w, QEvent* event)
 void ImageViewer::ViewerWidgetWheel(ViewerWidget* w, QEvent* event)
 {
 	QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
-	
-	////bool isPolygonthere = !w->getPolygonPoints().isEmpty();
-	////bool isLinethere = (w->getDrawLineBegin() != w->getDrawLineEnd());
-	////bool isCirclethere = (w->getCircleRadius() > 0);
-
-	////if (!isPolygonthere && !isLinethere && !isCirclethere) return;
 
 	int angel_delta = wheelEvent->angleDelta().y();
 	if (angel_delta == 0) return;
 	int index = ui->comboBoxLineAlg->currentIndex();
 
 	w->WheelMove(QPoint(0, angel_delta), index, globalColor);
-	////double scale_unit = (angel_delta > 0) ? 1.25 : 0.75;
-
-	////w->clear();
-
-	////// LINE WHEEL
-	////if (isLinethere)
-	////{
-	////	QPoint p1 = w->getDrawLineBegin();
-	////	QPoint p2 = w->getDrawLineEnd();
-
-	////	double X = p1.x() + (p2.x() - p1.x()) * scale_unit;
-	////	double Y = p1.y() + (p2.y() - p1.y()) * scale_unit;
-	////	QPoint scaledLine(qRound(X), qRound(Y));
-
-	////	w->setDrawLineEnd(scaledLine);
-
-	////	switch (ui->comboBoxLineAlg->currentIndex())
-	////	{
-	////	case 0:
-	////		w->drawLineDDA(p1, scaledLine, globalColor);
-	////		break;
-	////	case 1:
-	////		w->drawLineBresenham(p1, scaledLine, globalColor);
-	////		break;
-	////	}
-	////}
-
-	////// CIRCLE WHEEL
-	////if (isCirclethere)
-	////{
-	////	int newRadius = qRound(w->getCircleRadius() * scale_unit);
-	////	if (newRadius < 1) newRadius = 1;
-
-	////	w->setCircleRadius(newRadius);
-	////	w->drawCircleBresenham(w->getDrawCircleCenter(), newRadius, globalColor);
-	////}
-
-	////// POLYGON WHEEL
-	////if (isPolygonthere)
-	////{
-	////	QVector<QPoint> polygonPoints = w->getPolygonPoints(); 
-	////	QPointF point1 = polygonPoints[0];                  
-
-	////	int size = polygonPoints.size();
-
-	////	for (int i = 1; i < size; i++)
-	////	{
-	////		QPointF point = polygonPoints[i];
-	////		double X = point1.x() + (point.x() - point1.x()) * scale_unit;
-	////		double Y = point1.y() + (point.y() - point1.y()) * scale_unit;
-	////		polygonPoints[i] = QPoint(qRound(X), qRound(Y));
-	////	}
-
-	////	w->getPolygonPoints() = polygonPoints;
-	////	w->drawPolygon(polygonPoints, globalColor, true);
-	////}
-
-	////w->update();
 }
 
 void ImageViewer::on_DegeeresDoubleSpinBox_valueChanged(double value)
@@ -330,69 +266,71 @@ void ImageViewer::on_RotationtoolButton_clicked()
 {
 	if (!vW) return;
 
-	vW->rotationAngle += ui->DegeeresDoubleSpinBox->value();
-	double angle = vW->rotationAngle * M_PI / 180.0;
+	double rotation_angle = ui->DegeeresDoubleSpinBox->value();
+	int index = ui->comboBoxLineAlg->currentIndex();
 
-	vW->clear();
+	vW->RotationObjects(rotation_angle, index, globalColor);
 
-	// LINE ROTATE
-	QPoint p1 = vW->getDrawLineBegin();
-	QPoint p2 = vW->originalLineEnd;
+	//vW->clear();
 
-	double Sx = p1.x();
-	double Sy = p1.y();
-	double x = p2.x();
-	double y = p2.y();
-	double dx, dy;
+	//// LINE ROTATE
+	//QPoint p1 = vW->getDrawLineBegin();
+	//QPoint p2 = vW->originalLineEnd;
 
-	dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
-	dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
-	
-	QPoint rotatedLineEnd(qRound(dx), qRound(dy));
-	vW->setDrawLineEnd(rotatedLineEnd);
+	//double Sx = p1.x();
+	//double Sy = p1.y();
+	//double x = p2.x();
+	//double y = p2.y();
+	//double dx, dy;
 
-	if (p1 != rotatedLineEnd)
-	{
-		switch (ui->comboBoxLineAlg->currentIndex())
-		{
-		case 0:
-			vW->drawLineDDA(p1, rotatedLineEnd, globalColor);
-			break;
-		case 1:
-			vW->drawLineBresenham(p1, rotatedLineEnd, globalColor);
-			break;
-		}
-	}
+	//dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
+	//dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
+	//
+	//QPoint rotatedLineEnd(qRound(dx), qRound(dy));
+	//vW->setDrawLineEnd(rotatedLineEnd);
 
-	// POLYGON ROTATE 
-	QVector<QPoint> polygonPoints = vW->getPolygonPoints();
+	//if (p1 != rotatedLineEnd)
+	//{
+	//	switch (ui->comboBoxLineAlg->currentIndex())
+	//	{
+	//	case 0:
+	//		vW->drawLineDDA(p1, rotatedLineEnd, globalColor);
+	//		break;
+	//	case 1:
+	//		vW->drawLineBresenham(p1, rotatedLineEnd, globalColor);
+	//		break;
+	//	}
+	//}
 
-	if (!polygonPoints.isEmpty())
-	{
-		QPoint point1_polygon = polygonPoints[0];
-		double Sx_polygon = point1_polygon.x();
-		double Sy_polygon = point1_polygon.y();
+	//// POLYGON ROTATE 
+	//QVector<QPoint> polygonPoints = vW->getPolygonPoints();
 
-		QVector<QPoint> rotation;
-		rotation.append(point1_polygon);
-		int size = vW->getPolygonPoints().size();
+	//if (!polygonPoints.isEmpty())
+	//{
+	//	QPoint point1_polygon = polygonPoints[0];
+	//	double Sx_polygon = point1_polygon.x();
+	//	double Sy_polygon = point1_polygon.y();
 
-		for (int i = 1; i < size; i++)
-		{
-			QPoint polygon_point = polygonPoints[i];
-			double x = polygon_point.x();
-			double y = polygon_point.y();
-			double dx, dy;
+	//	QVector<QPoint> rotation;
+	//	rotation.append(point1_polygon);
+	//	int size = vW->getPolygonPoints().size();
 
-			dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
-			dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
-			
-			rotation.append(QPoint((int)dx, (int)dy));
-		}
+	//	for (int i = 1; i < size; i++)
+	//	{
+	//		QPoint polygon_point = polygonPoints[i];
+	//		double x = polygon_point.x();
+	//		double y = polygon_point.y();
+	//		double dx, dy;
 
-		vW->clear();
-		vW->drawPolygon(rotation, globalColor, true);
-	}
+	//		dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
+	//		dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
+	//		
+	//		rotation.append(QPoint((int)dx, (int)dy));
+	//	}
+
+	//	vW->clear();
+	//	vW->drawPolygon(rotation, globalColor, true);
+	//}
 	vW->update();
 }
 
