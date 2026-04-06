@@ -299,38 +299,9 @@ void ImageViewer::on_SlashpushButton_clicked()
 	if (!vW) return;
 
 	double value = ui->SlashdoubleSpinBox->value();
+	int index = ui->comboBoxLineAlg->currentIndex();
 
-	vW->clear();
-
-	// LINE SLASH
-	QPoint p1 = vW->getDrawLineBegin();
-	QPoint p2 = vW->getDrawLineEnd();
-
-	if (p1 != p2)
-	{
-		int newX1 = qRound(p1.x() + value * p1.y());
-		int newX2 = qRound(p2.x() + value * p2.y());
-
-		vW->setDrawLineBegin(QPoint(newX1, p1.y()));
-		vW->setDrawLineEnd(QPoint(newX2, p2.y()));
-
-		vW->drawLine(vW->getDrawLineBegin(), vW->getDrawLineEnd(), globalColor, ui->comboBoxLineAlg->currentIndex());
-	}
-
-	// POLYGON SLASH
-	QVector<QPoint>& polygonPoints = vW->getPolygonPoints();
-	int size = polygonPoints.size();
-
-	if (!polygonPoints.isEmpty())
-	{
-		for (int i = 0; i < size; ++i) 
-		{
-			int newX = qRound(polygonPoints[i].x() + value * polygonPoints[i].y());
-			polygonPoints[i].setX(newX);
-		}
-		vW->drawPolygon(polygonPoints, globalColor, true);
-	}
-	vW->update();
+	vW->SlashObjects(value, index, globalColor);
 }
 
 void ImageViewer::on_FillpushButton_clicked()

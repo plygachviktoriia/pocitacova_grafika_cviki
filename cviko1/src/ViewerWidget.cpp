@@ -591,6 +591,38 @@ void ViewerWidget::SymmetryObjects(int symmetry_index, int index, QColor color)
 	update();
 }
 
+void ViewerWidget::SlashObjects(double value, int index, QColor color)
+{
+	// LINE SLASH
+	QPoint p1 = getDrawLineBegin();
+	QPoint p2 = getDrawLineEnd();
+
+	double x0_new = p1.x() + value * p1.y();
+	double x1_new = p2.x() + value * p2.y();
+
+	QPoint slash_x0(qRound(x0_new), p1.y());
+	QPoint slash_x1(qRound(x1_new), p2.y());
+
+	setDrawLineBegin(slash_x0);
+	setDrawLineEnd(slash_x1);
+
+	// POLYGON SLASH
+	QVector<QPoint>& polygonPoints = getPolygonPoints();
+	int size = polygonPoints.size();
+
+	if (!polygonPoints.isEmpty())
+	{
+		for (int i = 0; i < size; ++i)
+		{
+			int newX = qRound(polygonPoints[i].x() + value * polygonPoints[i].y());
+			polygonPoints[i].setX(newX);
+		}
+	}
+	clear();
+	DrawObjects(color, index);
+	update();
+}
+
 //Slots
 void ViewerWidget::paintEvent(QPaintEvent* event)
 {

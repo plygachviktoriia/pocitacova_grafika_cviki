@@ -99,6 +99,7 @@ public:
 	void finishPolygon() { polygonFinished = true; polygonActive = false; }
 
 	void DrawObjects(QColor color, int index);
+
 	void MoveObjects(QPoint delta, int index, QColor color);
 	
 	void WheelMove(QPoint angel_delta, int index, QColor color);
@@ -108,6 +109,8 @@ public:
 	void ScaleObjects(double X_value, double Y_value, int index, QColor color);
 
 	void SymmetryObjects(int symmetry_index, int index, QColor color);
+
+	void SlashObjects(double value, int index, QColor color);
 
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
