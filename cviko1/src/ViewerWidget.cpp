@@ -521,6 +521,76 @@ void ViewerWidget::ScaleObjects(double X_value, double Y_value, int index, QColo
 	update();	
 }
 
+void ViewerWidget::SymmetryObjects(int symmetry_index, int index, QColor color)
+{
+	// LINE SYMMETRY
+
+	QPoint p1 = getDrawLineBegin();
+	QPoint p2 = getDrawLineEnd();
+
+	if (p1 != p2)
+	{
+		double a, b, c;
+
+		switch (symmetry_index)
+		{
+			case 0:       
+				a = 0;   // ked' x = 0 -> a = 0
+				b = 1;
+				c = -p1.y();
+				break;
+
+			case 1:
+				a = 1;
+				b = 0;
+				c = -p1.x();
+				break;
+		}
+
+		double d1 = (a * p1.x() + b * p1.y() + c) / (a * a + b * b);
+		p1.setX(qRound(p1.x() - 2 * a * d1));
+		p1.setY(qRound(p1.y() - 2 * b * d1));
+
+		double d2 = (a * p2.x() + b * p2.y() + c) / (a * a + b * b);
+		p2.setX(qRound(p2.x() - 2 * a * d2));
+		p2.setY(qRound(p2.y() - 2 * b * d2));
+
+		setDrawLineBegin(p1);
+		setDrawLineEnd(p2);
+	}
+
+	// POLYGON SYMETRY
+	QVector<QPoint>& polygonPoints = getPolygonPoints();
+	int size = polygonPoints.size();
+
+	if (!polygonPoints.isEmpty() && size > 1)
+	{
+		QPoint p1 = polygonPoints[0];
+		QPoint p2 = polygonPoints[1];
+
+		double u = p2.x() - p1.x();
+		double v = p2.y() - p1.y();
+
+		double a = v;
+		double b = -u;
+		double c = -a * p1.x() - b * p1.y();
+
+		for (int i = 0; i < size; i++)
+		{
+			QPoint point = polygonPoints[i];
+
+			double d = (a * point.x() + b * point.y() + c) / (a * a + b * b);
+			point.setX(qRound(point.x() - 2 * a * d));
+			point.setY(qRound(point.y() - 2 * b * d));
+
+			polygonPoints[i] = point;
+		}
+	}
+	clear();
+	DrawObjects(color, index);
+	update();
+}
+
 //Slots
 void ViewerWidget::paintEvent(QPaintEvent* event)
 {

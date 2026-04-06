@@ -288,83 +288,10 @@ void ImageViewer::on_SymmetrypushButton_clicked()
 {
 	if (!vW) return;
 
-	vW->clear();
+	int symmetry_index = ui->SymmetrycomboBox->currentIndex();
+	int index = ui->comboBoxLineAlg->currentIndex();
 
-	// LINE SYMMETRY
-
-	QPoint p1 = vW->getDrawLineBegin();
-	QPoint p2 = vW->getDrawLineEnd();
-
-	if (p1 != p2)
-	{
-		double a, b, c;
-
-		switch (ui->SymmetrycomboBox->currentIndex()) 
-		{ 
-		case 0:
-			a = 0; 
-			b = 1; 
-			c = -p1.y(); 
-			break;
-		
-		case 1:
-			a = 1; 
-			b = 0; 
-			c = -p1.x(); 
-			break;
-		}
-		
-		double d = (a * p1.x() + b * p1.y() + c) / (a * a + b * b);
-		p1.setX(qRound(p1.x() - 2 * a * d));
-		p1.setY(qRound(p1.y() - 2 * b * d));
-
-		d = (a * p2.x() + b * p2.y() + c) / (a * a + b * b);
-		p2.setX(qRound(p2.x() - 2 * a * d));
-		p2.setY(qRound(p2.y() - 2 * b * d));
-
-		vW->setDrawLineBegin(p1);
-		vW->setDrawLineEnd(p2);
-
-		switch (ui->comboBoxLineAlg->currentIndex())
-		{
-		case 0:
-			vW->drawLineDDA(p1, p2, globalColor);
-			break;
-		case 1:
-			vW->drawLineBresenham(p1, p2, globalColor);
-			break;
-		}
-	}
-
-	// POLYGON SYMETRY
-	QVector<QPoint>& polygonPoints = vW->getPolygonPoints();
-	int size = polygonPoints.size();
-
-	if (!polygonPoints.isEmpty() && size > 1)
-	{
-		QPoint p1 = polygonPoints[0];
-		QPoint p2 = polygonPoints[1];
-
-		double lenghtX = p2.x() - p1.x();
-		double lengthY = p2.y() - p1.y();
-
-		double a = lengthY;
-		double b = -lenghtX;
-		double c = -a * p1.x() - b * p1.y();
-
-		for (int i = 0; i < size; i++)
-		{
-			QPoint point = polygonPoints[i];
-
-			double d = (a * point.x() + b * point.y() + c) / (a * a + b * b);
-			point.setX(qRound(point.x() - 2 * a * d));
-			point.setY(qRound(point.y() - 2 * b * d));
-
-			polygonPoints[i] = point;
-		}
-		vW->drawPolygon(polygonPoints, globalColor, true);
-	}
-	vW->update();
+	vW->SymmetryObjects(symmetry_index, index, globalColor);
 }
 
 void ImageViewer::on_SlashpushButton_clicked()

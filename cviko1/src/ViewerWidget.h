@@ -107,6 +107,8 @@ public:
 
 	void ScaleObjects(double X_value, double Y_value, int index, QColor color);
 
+	void SymmetryObjects(int symmetry_index, int index, QColor color);
+
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
 };
