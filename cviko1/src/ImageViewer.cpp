@@ -278,72 +278,10 @@ void ImageViewer::on_ScailingpushButton_clicked()
 
 	double Sx = ui->XscaledoubleSpinBox->value();
 	double Sy = ui->YscaledoubleSpinBox->value();
+	int index = ui->comboBoxLineAlg->currentIndex();
 
-	vW->clear();
-
-	// LINE SCALE 
-	QPoint p1 = vW->getDrawLineBegin();
-	QPoint p2 = vW->getDrawLineEnd();
-
-	double dx = p1.x();
-	double dy = p1.y();
-	double x = p2.x();
-	double y = p2.y();
-
-	double scale_X = dx + (x - dx) * Sx;
-	double scale_Y = dy + (y - dy) * Sy;
-
-	QPoint scaled((int)scale_X, (int)scale_Y);
-
-	if (p1 != scaled)
-	{
-		switch (ui->comboBoxLineAlg->currentIndex())
-		{
-		case 0:
-			vW->drawLineDDA(p1, scaled, globalColor);
-			break;
-		case 1:
-			vW->drawLineBresenham(p1, scaled, globalColor);
-			break;
-		}
-	}
-
-	// POLYGON SCALE 
-	QVector<QPoint> polygonPoints = vW->getPolygonPoints();
-
-	if (!polygonPoints.isEmpty())
-	{
-		QPoint point1_polygon = polygonPoints[0];
-		QVector<QPoint> scaled;
-		scaled.append(point1_polygon);
-
-		int size = polygonPoints.size();
-
-		for (int i = 1; i < size; ++i)
-		{
-			double x = polygonPoints[i].x();
-			double y = polygonPoints[i].y();
-
-			double scale_X = point1_polygon.x() + (x - point1_polygon.x()) * Sx;
-			double scale_Y = point1_polygon.y() + (y - point1_polygon.y()) * Sy;
-
-			scaled.append(QPoint((int)scale_X, (int)scale_Y));
-		}
-
-		vW->drawPolygon(scaled, globalColor, true);
-	}
-
-	// CIRCLE SCALE
-	double scale = (Sx + Sy) / 2.0;
-	int newRadius = qRound(vW->getCircleRadius() * scale);
-
-	if (newRadius < 1)
-		newRadius = 1;
+	vW->ScaleObjects(Sx, Sy, index, globalColor);
 	
-	vW->setCircleRadius(newRadius);
-	vW->drawCircleBresenham(vW->getDrawCircleCenter(), newRadius, globalColor);
-
-	vW->update();
 }
 
 void ImageViewer::on_SymmetrypushButton_clicked()

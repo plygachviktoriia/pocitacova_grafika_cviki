@@ -441,14 +441,11 @@ void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor colo
 	QPoint p1 = getDrawLineBegin();
 	QPoint p2 = getDrawLineEnd();
 
-	double Sx = p1.x();
-	double Sy = p1.y();
-	double x = p2.x();
-	double y = p2.y();
-	double dx, dy;
+	double Sx = p1.x(), Sy = p1.y();
+	double x = p2.x(), y = p2.y();
 
-	dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
-	dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
+	double dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
+	double dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
 
 	QPoint rotatedLineEnd(qRound(dx), qRound(dy));
 	setDrawLineEnd(rotatedLineEnd);
@@ -468,12 +465,10 @@ void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor colo
 		for (int i = 1; i < size; i++)
 		{
 			QPoint polygon_point = polygonPoints[i];
-			double x = polygon_point.x();
-			double y = polygon_point.y();
-			double dx, dy;
+			double x = polygon_point.x(), y = polygon_point.y();
 
-			dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
-			dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
+			double dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
+			double dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
 
 			polygonPoints[i] = QPoint(qRound(dx), qRound(dy));
 		}
@@ -481,6 +476,49 @@ void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor colo
 
 	DrawObjects(color, index);
 	update();
+}
+
+void ViewerWidget::ScaleObjects(double X_value, double Y_value, int index, QColor color)
+{
+	double Sx = X_value;
+	double Sy = Y_value;
+
+	clear();
+
+	//LINE SCALE 
+	QPoint p1 = getDrawLineBegin();
+	QPoint p2 = getDrawLineEnd();
+
+	double x0 = p1.x(), y0 = p1.y();
+	double x = p2.x(), y = p2.y();
+
+	double scale_X = x0 + (x - x0) * Sx;
+	double scale_Y = y0 + (y - y0) * Sy;
+
+	QPoint scaled(qRound(scale_X), qRound(scale_Y));
+	setDrawLineEnd(scaled);
+
+	// POLYGON SCALE 
+	QVector<QPoint>& polygonPoints = getPolygonPoints();
+
+	if (!polygonPoints.isEmpty())
+	{
+		QPoint point1_polygon = polygonPoints[0];
+		int size = polygonPoints.size();
+
+		for (int i = 1; i < size; ++i)
+		{
+			double x = polygonPoints[i].x();
+			double y = polygonPoints[i].y();
+
+			double scale_X = point1_polygon.x() + (x - point1_polygon.x()) * Sx;
+			double scale_Y = point1_polygon.y() + (y - point1_polygon.y()) * Sy;
+
+			polygonPoints[i] = QPoint(qRound(scale_X), qRound(scale_Y));
+		}
+	}
+	DrawObjects(color, index);
+	update();	
 }
 
 //Slots

@@ -105,6 +105,8 @@ public:
 
 	void RotationObjects(double angle_rotation, int index, QColor color);
 
+	void ScaleObjects(double X_value, double Y_value, int index, QColor color);
+
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
 };
