@@ -433,9 +433,13 @@ void ViewerWidget::WheelMove(QPoint angle_delta, int index, QColor color)
 
 void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor color)
 {
+	double angle = angle_rotation * M_PI / 180.0;
+
+	clear();
+
 	//LINE 
 	QPoint p1 = getDrawLineBegin();
-	QPoint p2 = originalLineEnd;
+	QPoint p2 = getDrawLineEnd();
 
 	double Sx = p1.x();
 	double Sy = p1.y();
@@ -443,7 +447,6 @@ void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor colo
 	double y = p2.y();
 	double dx, dy;
 
-	double angle = angle_rotation * M_PI / 180.0;
 	dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
 	dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
 
@@ -451,30 +454,31 @@ void ViewerWidget::RotationObjects(double angle_rotation, int index, QColor colo
 	setDrawLineEnd(rotatedLineEnd);
 
 	//POLYGON
-	QVector<QPoint> polygonPoints = getPolygonPoints();
+	QVector<QPoint>& polygonPoints = getPolygonPoints();
 
-	QPoint point1_polygon = polygonPoints[0];
-	double Sx_polygon = point1_polygon.x();
-	double Sy_polygon = point1_polygon.y();
-
-	QVector<QPoint> rotation;
-	rotation.append(point1_polygon);
-	int size = getPolygonPoints().size();
-
-	for (int i = 1; i < size; i++)
+	if (!polygonPoints.isEmpty()) 
 	{
-		QPoint polygon_point = polygonPoints[i];
-		double x = polygon_point.x();
-		double y = polygon_point.y();
-		double dx, dy;
+		QPoint point1_polygon = polygonPoints[0];
 
-		dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
-		dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
+		double Sx_polygon = point1_polygon.x();
+		double Sy_polygon = point1_polygon.y();
 
-		rotation.append(QPoint((int)dx, (int)dy));
+		int size = getPolygonPoints().size();
+
+		for (int i = 1; i < size; i++)
+		{
+			QPoint polygon_point = polygonPoints[i];
+			double x = polygon_point.x();
+			double y = polygon_point.y();
+			double dx, dy;
+
+			dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
+			dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
+
+			polygonPoints[i] = QPoint(qRound(dx), qRound(dy));
+		}
 	}
 
-	clear();
 	DrawObjects(color, index);
 	update();
 }

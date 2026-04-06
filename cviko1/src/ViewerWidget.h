@@ -22,6 +22,8 @@ private:
 	bool polygonActive = false;
 	bool polygonFinished = false;
 
+	double angleRotation= 0.0;
+
 public:
 	ViewerWidget(QSize imgSize, QWidget* parent = Q_NULLPTR);
 	~ViewerWidget();

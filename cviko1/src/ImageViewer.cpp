@@ -270,68 +270,6 @@ void ImageViewer::on_RotationtoolButton_clicked()
 	int index = ui->comboBoxLineAlg->currentIndex();
 
 	vW->RotationObjects(rotation_angle, index, globalColor);
-
-	//vW->clear();
-
-	//// LINE ROTATE
-	//QPoint p1 = vW->getDrawLineBegin();
-	//QPoint p2 = vW->originalLineEnd;
-
-	//double Sx = p1.x();
-	//double Sy = p1.y();
-	//double x = p2.x();
-	//double y = p2.y();
-	//double dx, dy;
-
-	//dx = (x - Sx) * cos(angle) + (y - Sy) * sin(angle) + Sx;
-	//dy = -(x - Sx) * sin(angle) + (y - Sy) * cos(angle) + Sy;
-	//
-	//QPoint rotatedLineEnd(qRound(dx), qRound(dy));
-	//vW->setDrawLineEnd(rotatedLineEnd);
-
-	//if (p1 != rotatedLineEnd)
-	//{
-	//	switch (ui->comboBoxLineAlg->currentIndex())
-	//	{
-	//	case 0:
-	//		vW->drawLineDDA(p1, rotatedLineEnd, globalColor);
-	//		break;
-	//	case 1:
-	//		vW->drawLineBresenham(p1, rotatedLineEnd, globalColor);
-	//		break;
-	//	}
-	//}
-
-	//// POLYGON ROTATE 
-	//QVector<QPoint> polygonPoints = vW->getPolygonPoints();
-
-	//if (!polygonPoints.isEmpty())
-	//{
-	//	QPoint point1_polygon = polygonPoints[0];
-	//	double Sx_polygon = point1_polygon.x();
-	//	double Sy_polygon = point1_polygon.y();
-
-	//	QVector<QPoint> rotation;
-	//	rotation.append(point1_polygon);
-	//	int size = vW->getPolygonPoints().size();
-
-	//	for (int i = 1; i < size; i++)
-	//	{
-	//		QPoint polygon_point = polygonPoints[i];
-	//		double x = polygon_point.x();
-	//		double y = polygon_point.y();
-	//		double dx, dy;
-
-	//		dx = (x - Sx_polygon) * cos(angle) + (y - Sy_polygon) * sin(angle) + Sx_polygon;
-	//		dy = -(x - Sx_polygon) * sin(angle) + (y - Sy_polygon) * cos(angle) + Sy_polygon;
-	//		
-	//		rotation.append(QPoint((int)dx, (int)dy));
-	//	}
-
-	//	vW->clear();
-	//	vW->drawPolygon(rotation, globalColor, true);
-	//}
-	vW->update();
 }
 
 void ImageViewer::on_ScailingpushButton_clicked()
