@@ -555,8 +555,11 @@ void ImageViewer::on_actionExit_triggered()
 void ImageViewer::on_pushButtonSetColor_clicked()
 {
 	QColor newColor = QColorDialog::getColor(globalColor, this);
-	if (newColor.isValid()) {
+
+	if (newColor.isValid()) 
+	{
 		QString style_sheet = QString("background-color: %1;").arg(newColor.name(QColor::HexRgb));
+
 		ui->pushButtonSetColor->setStyleSheet(style_sheet);
 		globalColor = newColor;
 	}

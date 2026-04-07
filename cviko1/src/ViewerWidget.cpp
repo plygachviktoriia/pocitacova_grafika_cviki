@@ -623,6 +623,58 @@ void ViewerWidget::SlashObjects(double value, int index, QColor color)
 	update();
 }
 
+void ViewerWidget::ScanLine(QColor color)
+{
+	//POlYGON 
+	QVector<QPoint>& polygonPoints = getPolygonPoints();
+	int size = polygonPoints.size();
+
+	if (size > 3)
+	{
+		double y_min = polygonPoints[0].y();
+		double y_max = polygonPoints[0].y();
+
+		for (int i = 1; i < size; i++)
+		{
+			double point = polygonPoints[i].y();
+			if (point < y_min)
+			{
+				y_min = point;
+			}
+			if (point > y_max)
+			{
+				y_max = point;
+			}
+		}
+
+		for (int y = y_min; y <= y_max; y++)
+		{
+			QVector<int> edge;
+			for (int i = 0; i < size; i++)
+			{
+				QPoint z = polygonPoints[i];              //zaciatocny bod pre hranu
+				QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
+
+				if (z.y() == k.y()) continue; 
+				double yk = k.y() - 1;
+				double m = (k.y() - z.y()) / (k.x() - z.x());
+				double y_delta = k.y() - z.y();
+				double w = 1 / m;
+
+				double priesecnik = m * x + z.y() - m * z.x();
+
+
+				/*if ((y >= p1.y() && y < p2.y()) || (y >= p2.y() && y < p1.y()))
+				{
+					double x = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
+					edge.append(qRound(x));
+				}*/
+			}
+		}
+
+	}
+}
+
 //Slots
 void ViewerWidget::paintEvent(QPaintEvent* event)
 {
