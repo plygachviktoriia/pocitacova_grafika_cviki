@@ -623,6 +623,12 @@ void ViewerWidget::SlashObjects(double value, int index, QColor color)
 	update();
 }
 
+struct Side{
+	int delta_y;
+	double x;
+	double w;
+};
+
 void ViewerWidget::ScanLine(QColor color)
 {
 	//POlYGON 
@@ -646,6 +652,7 @@ void ViewerWidget::ScanLine(QColor color)
 				y_max = point;
 			}
 		}
+		QVector<Side> allSides;  
 
 		for (int y = y_min; y <= y_max; y++)
 		{
@@ -656,12 +663,12 @@ void ViewerWidget::ScanLine(QColor color)
 				QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
 
 				if (z.y() == k.y()) continue; 
-				double yk = k.y() - 1;
+				k.setY(k.y() - 1);
 				double m = (k.y() - z.y()) / (k.x() - z.x());
 				double y_delta = k.y() - z.y();
 				double w = 1 / m;
 
-				double priesecnik = m * x + z.y() - m * z.x();
+			//	double priesecnik = m * x + z.y() - m * z.x();
 
 
 				/*if ((y >= p1.y() && y < p2.y()) || (y >= p2.y() && y < p1.y()))

@@ -1,5 +1,6 @@
 #pragma once
 #include <QtWidgets>
+
 class ViewerWidget :public QWidget {
 	Q_OBJECT
 private:
