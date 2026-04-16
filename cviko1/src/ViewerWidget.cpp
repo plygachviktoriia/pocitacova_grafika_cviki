@@ -623,9 +623,9 @@ void ViewerWidget::SlashObjects(double value, int index, QColor color)
 	update();
 }
 
-struct Side{
-	int delta_y;
-	double x;
+struct Side{          //vytvorenie structury podlia ukladanie udajov o stranach aby mohla ich 
+	int delta_y;      // odsortorovat
+	double x;      
 	double w;
 };
 
@@ -654,29 +654,45 @@ void ViewerWidget::ScanLine(QColor color)
 		}
 		QVector<Side> allSides;  
 
-		for (int y = y_min; y <= y_max; y++)
+		for (int i = 0; i < size; i++)
 		{
-			QVector<int> edge;
-			for (int i = 0; i < size; i++)
+			QPoint z = polygonPoints[i];              //zaciatocny bod pre hranu
+			QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
+			if (z.y() == k.y()) continue;
+
+			double min = 0.0, max = 0.0;
+
+			if (z.y() > k.y())
 			{
-				QPoint z = polygonPoints[i];              //zaciatocny bod pre hranu
-				QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
-
-				if (z.y() == k.y()) continue; 
-				k.setY(k.y() - 1);
-				double m = (k.y() - z.y()) / (k.x() - z.x());
-				double y_delta = k.y() - z.y();
-				double w = 1 / m;
-
-			//	double priesecnik = m * x + z.y() - m * z.x();
-
-
-				/*if ((y >= p1.y() && y < p2.y()) || (y >= p2.y() && y < p1.y()))
-				{
-					double x = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
-					edge.append(qRound(x));
-				}*/
+				min = k.y();
+				max = z.y();
 			}
+
+			k.setY(k.y() - 1);
+			double m = (k.y() - z.y()) / (k.x() - z.x());
+			double y_delta = k.y() - z.y();
+			double w = 1 / m;
+			//QVector<int> edge;
+			//for (int i = 0; i < size; i++)
+			//{
+			//	QPoint z = polygonPoints[i];              //zaciatocny bod pre hranu
+			//	QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
+
+			//	if (z.y() == k.y()) continue; 
+			//	k.setY(k.y() - 1);
+			//	double m = (k.y() - z.y()) / (k.x() - z.x());
+			//	double y_delta = k.y() - z.y();
+			//	double w = 1 / m;
+
+			////	double priesecnik = m * x + z.y() - m * z.x();
+
+
+			//	/*if ((y >= p1.y() && y < p2.y()) || (y >= p2.y() && y < p1.y()))
+			//	{
+			//		double x = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
+			//		edge.append(qRound(x));
+			//	}*/
+			//}
 		}
 
 	}
