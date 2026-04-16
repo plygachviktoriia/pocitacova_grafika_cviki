@@ -623,10 +623,11 @@ void ViewerWidget::SlashObjects(double value, int index, QColor color)
 	update();
 }
 
-struct Side{          //vytvorenie structury podlia ukladanie udajov o stranach aby mohla ich 
-	int delta_y;      // odsortorovat
+struct Side{          //vytvorenie structury podlia ukladanie udajov o stranach aby mohla ich odsortorovat
+	int delta_y;      
 	double x;      
 	double w;
+	double start_y;
 };
 
 void ViewerWidget::ScanLine(QColor color)
@@ -652,49 +653,72 @@ void ViewerWidget::ScanLine(QColor color)
 				y_max = point;
 			}
 		}
+
 		QVector<Side> allSides;  
 
 		for (int i = 0; i < size; i++)
 		{
-			QPoint z = polygonPoints[i];              //zaciatocny bod pre hranu
-			QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
-			if (z.y() == k.y()) continue;
-
-			double min = 0.0, max = 0.0;
+			QPoint z = polygonPoints[i];                   //zaciatocny bod pre hranu
+			QPoint k = polygonPoints[(i + 1) % size];      // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
+			if (z.y() == k.y()) continue;                  // nic nie robimo s horizontal
 
 			if (z.y() > k.y())
 			{
-				min = k.y();
-				max = z.y();
+				std::swap(z, k);
 			}
+			
+			double dx = k.x() - z.x();
+			double dy = k.y() - z.y();
+			double m = 0.0, w = 0.0;
 
-			k.setY(k.y() - 1);
-			double m = (k.y() - z.y()) / (k.x() - z.x());
-			double y_delta = k.y() - z.y();
-			double w = 1 / m;
-			//QVector<int> edge;
-			//for (int i = 0; i < size; i++)
-			//{
-			//	QPoint z = polygonPoints[i];              //zaciatocny bod pre hranu
-			//	QPoint k = polygonPoints[(i + 1) % size]; // koncovy bod pre hranu (% size nadobne na to aby tento bod ne prechadzal rozmier)
+			if (dx != 0)
+			{
+				m = (k.y() - z.y()) / (k.x() - z.x());
+				w = 1 / m;
+			}
+			else {
+				w = 0.0;
+			}
+	
+			double y_delta = (k.y() - 1) - z.y();
+			if (y_delta == 0) continue;
 
-			//	if (z.y() == k.y()) continue; 
-			//	k.setY(k.y() - 1);
-			//	double m = (k.y() - z.y()) / (k.x() - z.x());
-			//	double y_delta = k.y() - z.y();
-			//	double w = 1 / m;
+			Side side;
 
-			////	double priesecnik = m * x + z.y() - m * z.x();
-
-
-			//	/*if ((y >= p1.y() && y < p2.y()) || (y >= p2.y() && y < p1.y()))
-			//	{
-			//		double x = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
-			//		edge.append(qRound(x));
-			//	}*/
-			//}
+			side.delta_y = y_delta;
+			side.w = w;
+			side.x = z.x();
+			side.start_y = z.y();
+			
+			allSides.append(side);
+		}
+		
+		int size_side = allSides.size();
+		for (int i = 0; i < size_side; i++)
+		{
+			for (int j = 0; j < size_side - 1; j++)
+			{
+				if (allSides[j].start_y > allSides[j + 1].start_y)
+				{
+					Side t = allSides[j];
+					allSides[j] = allSides[j + 1];
+					allSides[j + 1] = t;
+				}
+			}
 		}
 
+		double miny = allSides[0].start_y;
+		double maxy = y_max;
+		int size_table = maxy - miny;
+
+		QVector<QVector<Side>> TH(size_table);
+
+		for (int i = 0; i < size_side; i++)
+		{
+			Side cur_side = allSides[i];
+			int index = cur_side.start_y - miny;
+			TH[index].append(cur_side);
+		}
 	}
 }
 
