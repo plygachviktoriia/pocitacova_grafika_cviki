@@ -694,6 +694,7 @@ void ViewerWidget::ScanLine(QColor color)
 		}
 		
 		int size_side = allSides.size();
+
 		for (int i = 0; i < size_side; i++)
 		{
 			for (int j = 0; j < size_side - 1; j++)
@@ -711,13 +712,76 @@ void ViewerWidget::ScanLine(QColor color)
 		double maxy = y_max;
 		int size_table = maxy - miny;
 
-		QVector<QVector<Side>> TH(size_table);
+		QVector<QVector<Side>> TH(size_table);            // tabulka so vsetkymy hranamy
 
 		for (int i = 0; i < size_side; i++)
 		{
 			Side cur_side = allSides[i];
 			int index = cur_side.start_y - miny;
 			TH[index].append(cur_side);
+		}
+
+		QVector<Side> ZAH;                         //list s aktualnymy hr
+		double y = y_min;
+
+		for (int cury = miny; cury <= maxy; cury++)
+		{
+			int th_index = cury - miny;
+
+			if (!TH[th_index].isEmpty())
+			{
+				for (int i = 0; i < TH[th_index].size(); i++)
+				{
+					Side new_side = TH[th_index][i];
+					ZAH.append(new_side);
+				}
+			}
+
+			int zah_size = ZAH.size();
+
+			for (int k = 0; k < zah_size; k++)
+			{
+				for (int t = 0; t < zah_size - 1; t++)
+				{
+					if (ZAH[t].x > ZAH[t + 1].x)
+					{
+						Side temp = ZAH[t];
+						ZAH[t] = ZAH[t + 1];
+						ZAH[t + 1] = temp;
+					}
+				}
+			}
+
+			for (int zahj = 0; zahj < zah_size - 1; zahj += 2) 
+			{
+				int x_start = qCeil(ZAH[zahj].x);
+				int x_end = qFloor(ZAH[zahj + 1].x);
+
+				if (x_start != x_end + 1)
+				{
+					for (int px = x_start; px <= x_end; px++)
+					{
+						 setPixel(px, cury, color);
+					}
+				}
+			}
+
+			for (int i = 0; i < ZAH.size(); i++) 
+			{
+				ZAH[i].x += ZAH[i].w;     
+				ZAH[i].delta_y -= 1;   
+			}
+
+			QVector<Side> nextZAH;
+			for (int i = 0; i < ZAH.size(); i++)
+			{
+				if (ZAH[i].delta_y > 0)
+				{
+					nextZAH.append(ZAH[i]);
+				}
+			}
+
+			ZAH = nextZAH;
 		}
 	}
 }
