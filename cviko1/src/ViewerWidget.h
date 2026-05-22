@@ -1,6 +1,14 @@
 #pragma once
 #include <QtWidgets>
 
+struct Side {          //vytvorenie structury podlia ukladanie udajov o stranach aby mohla ich odsortorovat
+	int delta_y;
+	double x;
+	double w;
+	double start_y;
+};
+
+
 class ViewerWidget :public QWidget {
 	Q_OBJECT
 private:
@@ -114,6 +122,10 @@ public:
 	void SlashObjects(double value, int index, QColor color);
 
 	void ScanLine(QColor color);
+
+	void FillTriangle(QColor color);
+
+	//void CubeCreate(int value, QColor color);
 
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;

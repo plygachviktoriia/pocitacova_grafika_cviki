@@ -623,13 +623,6 @@ void ViewerWidget::SlashObjects(double value, int index, QColor color)
 	update();
 }
 
-struct Side{          //vytvorenie structury podlia ukladanie udajov o stranach aby mohla ich odsortorovat
-	int delta_y;      
-	double x;      
-	double w;
-	double start_y;
-};
-
 void ViewerWidget::ScanLine(QColor color)
 {
 	//POlYGON 
@@ -673,14 +666,14 @@ void ViewerWidget::ScanLine(QColor color)
 
 			if (dx != 0)
 			{
-				m = (k.y() - z.y()) / (k.x() - z.x());
-				w = 1 / m;
+				m = dy / dx;
+				w = dx / dy;;
 			}
 			else {
 				w = 0.0;
 			}
 	
-			double y_delta = (k.y() - 1) - z.y();
+			double y_delta = k.y()  - z.y();
 			if (y_delta == 0) continue;
 
 			Side side;
@@ -710,7 +703,7 @@ void ViewerWidget::ScanLine(QColor color)
 
 		double miny = allSides[0].start_y;
 		double maxy = y_max;
-		int size_table = maxy - miny;
+		int size_table = maxy - miny + 1;
 
 		QVector<QVector<Side>> TH(size_table);            // tabulka so vsetkymy hranamy
 
@@ -780,9 +773,106 @@ void ViewerWidget::ScanLine(QColor color)
 					nextZAH.append(ZAH[i]);
 				}
 			}
-
 			ZAH = nextZAH;
 		}
+	}
+}
+
+void ViewerWidget::FillTriangle(QColor color)
+{
+	QVector<QPoint> Triangle = getPolygonPoints();
+	int size_triang = Triangle.size();
+
+	if (size_triang == 3)
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			for (int j = 0; j < 2 - i; j++)
+			{
+				if (Triangle[j].y() > Triangle[j + 1].y())
+				{
+					QPoint t = Triangle[j];
+					Triangle[j] = Triangle[j + 1];
+					Triangle[j + 1] = t;
+				}
+			}
+		}
+
+		if (Triangle[0].y() == Triangle[1].y())          // vrchneho trojuh neexist
+		{
+			double dy = Triangle[2].y() - Triangle[0].y();
+
+			if (dy != 0)
+			{
+				double w1 = (Triangle[2].x() - Triangle[0].x()) / dy; 
+				double w2 = (Triangle[2].x() - Triangle[1].x()) / dy;
+
+				double x1 = Triangle[0].x(), x2 = Triangle[1].x();
+				int y1 = Triangle[0].y(), y2 = Triangle[2].y();
+
+				for (int i = y1; i < y2; i++)
+				{
+					int x_start = qMin(qRound(x1), qRound(x2));
+					int x_end = qMax(qRound(x1), qRound(x2));
+
+					for (int x = x_start; x <= x_end; x++)
+					{
+						// Nearest Neighbor / Barycentrick?)
+							
+					}
+
+					x1 += w1;
+					x2 += w2;
+				}
+			}
+		} 
+		else if (Triangle[2].y() == Triangle[1].y())
+		{
+
+		}
+
+		double dy1 = Triangle[2].y() - Triangle[0].y();
+		double ma = 0;
+		if (dy1 != 0)
+		{
+			double dx1 = Triangle[2].x() - Triangle[0].x();
+			ma = dx1 / dy1;
+		}
+
+		double dy2 = Triangle[1].y() - Triangle[0].y();
+		double mb = 0;
+		if (dy2 != 0)
+		{
+			double dx2 = Triangle[1].x() - Triangle[0].x();
+			mb = dx2 / dy2;
+		}
+		
+		double dy3 = Triangle[2].y() - Triangle[1].y();
+		double mc = 0;
+		if (dy3 != 0)
+		{
+			double dx3 = Triangle[2].x() - Triangle[1].x();
+			mc = dx3 / dy3;
+		}
+		 
+		int y_start = Triangle[0].y();
+		int y_end = Triangle[2].y();
+
+		for (int i = y_start; i <= y_end; i++)
+		{
+
+		}
+
+		
+		//if ()
+		//{
+		//	double p = (Triangle[2].x() - Triangle[0].x()) / (Triangle[2].y() - Triangle[0].y());
+		//	double Px = Triangle[0].x() + (Triangle[1].y() - Triangle[0].y()) * p;
+		//	double Py = Triangle[1].y();
+
+		//	QPoint P(qRound(Px), qRound(Py));
+		//}
+
 	}
 }
 

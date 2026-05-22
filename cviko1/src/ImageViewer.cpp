@@ -309,163 +309,23 @@ void ImageViewer::on_FillpushButton_clicked()
 	if (!vW) return;
 
 	// POLYGON FILL
+
 	QVector<QPoint>& polygonPoints = vW->getPolygonPoints();
 	int size = polygonPoints.size();
 
-	if (!polygonPoints.isEmpty() && size > 3)
+	if (size > 3)
 	{
-		int minY = polygonPoints[0].y();
-		int maxY = polygonPoints[0].y();
-
-		for (int i = 0; i < size; i++)
-		{
-			int point_y = polygonPoints[i].y();
-			
-			if (point_y > maxY)	maxY = point_y;
-			if (point_y < minY) minY = point_y;
-		}
-
-		for (int y = minY; y <= maxY; y++)
-		{
-			QVector<int> edge;
-
-			for (int i = 0; i < size; i++)
-			{
-				QPoint p1 = polygonPoints[i];
-				QPoint p2 = polygonPoints[(i + 1) % size];
-
-				if (p1.y() == p2.y()) continue;
-
-				if ((y >= p1.y() && y < p2.y()) || (y >= p2.y() && y < p1.y()))
-				{
-					double x = p1.x() + (double)(y - p1.y()) * (p2.x() - p1.x()) / (p2.y() - p1.y());
-					edge.append(qRound(x));
-				}
-			}
-
-			int edge_size = edge.size();
-
-			for (int i = 0; i < edge_size - 1; i++)
-			{
-				for (int j = 0; j < edge_size - i - 1; j++)
-				{
-					if (edge[j] > edge[j + 1])
-					{
-						int temp = edge[j];
-						edge[j] = edge[j + 1];
-						edge[j + 1] = temp;
-					}
-				}
-			}
-
-			for (int k = 0; k + 1 < edge_size; k += 2)
-			{
-				int start_x = edge[k];
-				int end_x = edge[k + 1];
-
-				if (start_x > end_x)
-				{
-					int temp = start_x;
-					start_x = end_x;
-					end_x = temp;
-				}
-			
-				for (int x = start_x; x <= end_x; x++)
-				{
-					vW->setPixel(x, y, globalColor);
-				}
-
-			}
-		}
-		
-	}
-
-	// TRIANGLE FILL
-	if (size == 3)
-	{
-		QVector<QPoint> tP = vW->getPolygonPoints();
-
-		QColor c1 = QColor::fromRgb(QRandomGenerator::global()->bounded(256),
-			QRandomGenerator::global()->bounded(256),
-			QRandomGenerator::global()->bounded(256));
-
-		QColor c2 = QColor::fromRgb(QRandomGenerator::global()->bounded(256),
-			QRandomGenerator::global()->bounded(256),
-			QRandomGenerator::global()->bounded(256));
-
-		QColor c3 = QColor::fromRgb(QRandomGenerator::global()->bounded(256),
-			QRandomGenerator::global()->bounded(256),
-			QRandomGenerator::global()->bounded(256));
-
-		QPoint T1 = tP[0], T2 = tP[1], T3 = tP[2];
-
-		if (T1.y() > T2.y() || (T1.y() == T2.y() && T1.x() > T2.x())) std::swap(T1, T2);
-		if (T1.y() > T3.y() || (T1.y() == T3.y() && T1.x() > T3.x())) std::swap(T1, T3);
-		if (T2.y() > T3.y() || (T2.y() == T3.y() && T2.x() > T3.x())) std::swap(T2, T3);
-
-		int minY = T1.y();
-		int maxY = T3.y();
-
-		double det = (double)(tP[1].y() - tP[2].y()) * (tP[0].x() - tP[2].x()) +
-			(double)(tP[2].x() - tP[1].x()) * (tP[0].y() - tP[2].y());
-
-		for (int y = minY; y <= maxY; y++)
-		{
-			QVector<int> intrs_x;
-
-			for (int i = 0; i < 3; i++) 
-			{
-				QPoint pA = tP[i];
-				QPoint pB = tP[(i + 1) % 3];
-
-				if ((y >= pA.y() && y < pB.y()) || (y >= pB.y() && y < pA.y())) 
-				{
-					double x = pA.x() + (double)(y - pA.y()) * (pB.x() - pA.x()) / (pB.y() - pA.y());
-					intrs_x.append(qRound(x));
-				}
-			}
-
-			std::sort(intrs_x.begin(), intrs_x.end());
-
-			if (intrs_x.size() >= 2)
-			{
-				for (int x = intrs_x.first(); x <= intrs_x.last(); x++)
-				{
-					double alpha = ((double)(tP[1].y() - tP[2].y()) * (x - tP[2].x()) +
-						(double)(tP[2].x() - tP[1].x()) * (y - tP[2].y())) / det;
-
-					double beta = ((double)(tP[2].y() - tP[0].y()) * (x - tP[2].x()) +
-						(double)(tP[0].x() - tP[2].x()) * (y - tP[2].y())) / det;
-
-					double gamma = 1.0 - alpha - beta;
-
-					int index = ui->FillcomboBox->currentIndex();
-					switch (index)
-					{
-						case 0: // Nearest Neighbor
-						{
-							if (alpha >= beta && alpha >= gamma) vW->setPixel(x, y, c1);
-
-							else if (beta >= alpha && beta >= gamma) vW->setPixel(x, y, c2);
-
-							else vW->setPixel(x, y, c3);
-							break;
-						}
-						case 1: // Barycentric
-						{
-							int r = qBound(0, int(alpha * c1.red() + beta * c2.red() + gamma * c3.red()), 255);
-							int g = qBound(0, int(alpha * c1.green() + beta * c2.green() + gamma * c3.green()), 255);
-							int b = qBound(0, int(alpha * c1.blue() + beta * c2.blue() + gamma * c3.blue()), 255);
-
-							vW->setPixel(x, y, QColor(r, g, b));
-							break;
-						}
-					}
-				}
-			}
-		}
+		vW->ScanLine(globalColor);
 	}
 	vW->update();
+}
+
+void ImageViewer::on_pushButtonOK_clicked()
+{
+	if (!vW) return;
+
+	int value = ui->spinBoxCube->value();
+
 }
 
 //ImageViewer Events

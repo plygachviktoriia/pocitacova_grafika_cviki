@@ -65,4 +65,6 @@ private slots:
 	void on_T1pushButtonColor_clicked();
 	void on_T2pushButtonColor_clicked();
 	void on_T3pushButtonColor_clicked();
+
+	void on_pushButtonOK_clicked();
 };
