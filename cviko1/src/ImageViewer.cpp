@@ -324,7 +324,7 @@ void ImageViewer::on_pushButtonOK_clicked()
 {
 	if (!vW) return;
 
-	int value = ui->spinBoxCube->value();
+	//int value = ui->spinBoxCube->value();
 
 }
 
