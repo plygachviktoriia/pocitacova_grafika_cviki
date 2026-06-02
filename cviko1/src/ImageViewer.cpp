@@ -13,6 +13,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 
 	vW = new ViewerWidget(QSize(500, 500), ui->scrollArea);
 	ui->scrollArea->setWidget(vW);
+	v3D = nullptr;
 
 	ui->scrollArea->setBackgroundRole(QPalette::Dark);
 	ui->scrollArea->setWidgetResizable(false);
@@ -322,10 +323,32 @@ void ImageViewer::on_FillpushButton_clicked()
 
 void ImageViewer::on_pushButtonOK_clicked()
 {
-	if (!vW) return;
+	if (!v3D) {
+		v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
+	}
 
-	//int value = ui->spinBoxCube->value();
+	if (ui->scrollArea->widget() != v3D) {
+		ui->scrollArea->takeWidget();  
+		ui->scrollArea->setWidget(v3D); 
+	}
 
+	double size = ui->spinBoxCube->value();
+	v3D->create_cube(size);
+
+	QString fileName = QFileDialog::getSaveFileName(this, "Çáåðåãòè 3D êóá", QDir::currentPath() + "/cube.vtk", "VTK Files (*.vtk)");
+
+	if (!fileName.isEmpty())
+	{
+		std::string filePath = fileName.toStdString();
+		v3D->SaveVTK(filePath); // Çáåð³ãàºìî[cite: 12]
+
+		v3D->getVertices().clear();
+		v3D->getTriangles().clear();
+
+		v3D->LoadVTK(filePath);
+
+		v3D->update();
+	}
 }
 
 //ImageViewer Events
@@ -363,17 +386,41 @@ void ImageViewer::on_actionOpen_triggered()
 {
 	QString folder = settings.value("folder_img_load_path", "").toString();
 
-	QString fileFilter = "Image data (*.bmp *.gif *.jpg *.jpeg *.png *.pbm *.pgm *.ppm *.xbm *.xpm);;All files (*)";
-	QString fileName = QFileDialog::getOpenFileName(this, "Load image", folder, fileFilter);
+	QString fileFilter = "All Supported (*.bmp *.jpg *.png *.vtk);;3D Models (*.vtk);;Image data (*.bmp *.gif *.jpg *.jpeg *.png);;All files (*)";
+	QString fileName = QFileDialog::getOpenFileName(this, "Load file", folder, fileFilter);
+
 	if (fileName.isEmpty()) { return; }
 
 	QFileInfo fi(fileName);
 	settings.setValue("folder_img_load_path", fi.absoluteDir().absolutePath());
 
-	if (!openImage(fileName)) {
-		msgBox.setText("Unable to open image.");
-		msgBox.setIcon(QMessageBox::Warning);
-		msgBox.exec();
+	if (fi.suffix().toLower() == "vtk")
+	{
+		// Ñòâîðþºìî, ÿêùî íåìàº
+		if (!v3D) {
+			v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
+		}
+
+		if (ui->scrollArea->widget() != v3D) {
+			ui->scrollArea->takeWidget();
+			ui->scrollArea->setWidget(v3D);
+		}
+
+		v3D->LoadVTK(fileName.toStdString()); //[cite: 12]
+		v3D->update(); // Ïåðåìàëüîâóºìî ÁÅÇ v3D->show()
+	}
+	else
+	{
+		if (ui->scrollArea->widget() != vW) {
+			ui->scrollArea->takeWidget();
+			ui->scrollArea->setWidget(vW); //[cite: 10]
+		}
+
+		if (!openImage(fileName)) { //[cite: 10]
+			msgBox.setText("Unable to open image.");
+			msgBox.setIcon(QMessageBox::Warning);
+			msgBox.exec();
+		}
 	}
 }
 void ImageViewer::on_actionSave_as_triggered()

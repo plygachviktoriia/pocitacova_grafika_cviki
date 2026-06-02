@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include "ui_ImageViewer.h"
 #include "ViewerWidget.h"
+#include "Viewer3DWidget.h"
 
 class ImageViewer : public QMainWindow
 {
@@ -15,6 +16,7 @@ public:
 private:
 	Ui::ImageViewerClass* ui;
 	ViewerWidget* vW;
+	Viewer3DWidget* v3D;
 
 	QColor globalColor;
 	QSettings settings;
@@ -66,5 +68,6 @@ private slots:
 	void on_T2pushButtonColor_clicked();
 	void on_T3pushButtonColor_clicked();
 
+	// 3D
 	void on_pushButtonOK_clicked();
 };
