@@ -197,3 +197,18 @@ void Viewer3DWidget::create_sphere(double radius, int medians, int parallels)
 	}
 	update();
 }
+
+void Viewer3DWidget::camera()
+{
+	camera_n.x = std::sin(theta) * std::sin(phi);
+	camera_n.y = std::sin(theta) * std::cos(phi);
+	camera_n.z = std::cos(theta);
+
+	camera_u.x = std::sin(theta + M_PI / 2.0) * std::sin(phi);
+	camera_u.y = std::sin(theta + M_PI / 2.0) * std::cos(phi);
+	camera_u.z = std::cos(theta + M_PI / 2.0);
+
+	camera_v.x = camera_u.y * camera_n.z - camera_u.z * camera_n.y;
+	camera_v.y = camera_u.z * camera_n.x - camera_u.x * camera_n.z;
+	camera_v.z = camera_u.x * camera_n.y - camera_u.y * camera_n.x;
+}

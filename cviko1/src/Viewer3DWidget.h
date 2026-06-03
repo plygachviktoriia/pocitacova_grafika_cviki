@@ -11,6 +11,13 @@ struct Triangle {
 	int v1, v2, v3;
 };
 
+struct Face {
+	Triangle tri1;
+	Triangle tri2;
+	QColor color;
+	double avgZ; 
+};
+
 class Viewer3DWidget : public QWidget
 {
 	Q_OBJECT
@@ -23,6 +30,14 @@ private:
 	double cube_size = 10.0;
 	double sphere_radius = 10.0;
 
+	// CAMERA
+	double theta = M_PI / 4.0;  //zenit
+	double phi = M_PI / 4.0;   // azymut
+
+	Vertex3D camera_n = { 0, 0, 1 };
+	Vertex3D camera_u = { 1, 0, 0 };
+	Vertex3D camera_v = { 0, 1, 0 };
+
 public:
 	Viewer3DWidget(QSize widgetSize, QWidget* parent = Q_NULLPTR);
 	~Viewer3DWidget();
@@ -30,6 +45,7 @@ public:
 	void create_cube(double size);
 	void create_sphere(double radius, int medians, int parallels);
 	QPointF revert_3d(const Vertex3D& v);        //prevod 3d obrazku v 2d
+	void camera();
 
 	//SAVE IN FILE
 	void SaveVTK(const std::string& path);
