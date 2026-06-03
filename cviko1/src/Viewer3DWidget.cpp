@@ -82,7 +82,7 @@ void Viewer3DWidget::LoadVTK(const std::string& path)
 	update();
 }
 
-QPointF Viewer3DWidget::revert_3d(const Vertex3D& v)
+QPointF Viewer3DWidget::revert_3d(Vertex3D& v)
 {
 	double centerX = width() / 2.0;
 	double centerY = height() / 2.0;
@@ -241,12 +241,12 @@ void Viewer3DWidget::setSz(double sz)
 	update(); 
 }
 
-double Viewer3DWidget::scalar(const Vertex3D& a, const Vertex3D& b)
+double Viewer3DWidget::scalar(Vertex3D& a, Vertex3D& b)
 {
 	return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-Vertex3D Viewer3DWidget::view_coordinates(const Vertex3D& v)
+Vertex3D Viewer3DWidget::view_coordinates(Vertex3D& v)
 {
 	double x = scalar(v, camera_v);
 	double y = scalar(v, camera_u);
@@ -255,3 +255,24 @@ Vertex3D Viewer3DWidget::view_coordinates(const Vertex3D& v)
 	return { x, y, z };
 }
 
+Vertex3D Viewer3DWidget::projekcia(Vertex3D& proj)
+{
+	double centred_X = width() / 2.0;
+	double centred_Y = height() / 2.0;
+
+	if (proj_type == 0)   // rovnobezne pravouhle premetanie do roviny xy
+	{
+		double proj_X = proj.x;
+		double proj_Y = proj.y;
+		double proj_Z = 0;
+	}
+	else {              // perspectivne, stred premitanie sur (0, 0, Sz) - proj do roviny z = dz
+		double menovatel = Sz - proj.z;
+		if (std::abs(menovatel) < 1e-6) menovatel = 1e-6;  // podmienka na bezpecnost delenia 
+		
+		double proj_X = Sz * proj.x / menovatel;
+		double proj_Y = Sz * proj.y / menovatel;
+		double proj_Z = 0;
+	}
+
+}

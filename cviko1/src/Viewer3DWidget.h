@@ -41,9 +41,10 @@ public:
 
 	void create_cube(double size);
 	void create_sphere(double radius, int medians, int parallels);
-	QPointF revert_3d(const Vertex3D& v);        //prevod 3d obrazku v 2d
-	double scalar(const Vertex3D& a, const Vertex3D& b);
-	Vertex3D view_coordinates(const Vertex3D& v);
+	QPointF revert_3d(Vertex3D& v);        //prevod 3d obrazku v 2d
+	double scalar(Vertex3D& a, Vertex3D& b);
+	Vertex3D view_coordinates(Vertex3D& v);
+	Vertex3D projekcia(Vertex3D& proj);
 
 	//SAVE IN FILE
 	void SaveVTK(const std::string& path);
@@ -56,7 +57,7 @@ public:
 	void setTetha(double t);
 	void setPhi(double p);
 	void projectionType(int type);
-	void setWireframe(bool w) { wireframe = w; update(); }
+	void setWireframe(bool w);
 	void setSz(double sz);
 
 
