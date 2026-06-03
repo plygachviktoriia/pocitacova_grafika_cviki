@@ -228,3 +228,30 @@ void Viewer3DWidget::projectionType(int type)
 	proj_type = type;
 	update();
 }
+
+void Viewer3DWidget::setWireframe(bool w) 
+{ 
+	wireframe = w; 
+	update();
+}
+
+void Viewer3DWidget::setSz(double sz) 
+{ 
+	Sz = sz;      
+	update(); 
+}
+
+double Viewer3DWidget::scalar(const Vertex3D& a, const Vertex3D& b)
+{
+	return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+Vertex3D Viewer3DWidget::view_coordinates(const Vertex3D& v)
+{
+	double x = scalar(v, camera_v);
+	double y = scalar(v, camera_u);
+	double z = scalar(v, camera_n);
+
+	return { x, y, z };
+}
+
