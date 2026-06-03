@@ -2,6 +2,7 @@
 #include <QtWidgets/QWidget>
 #include <vector>
 #include <string>
+#include "ViewerWidget.h"
 
 struct Vertex3D {
 	double x, y, z;
@@ -13,10 +14,10 @@ struct Triangle {
 	int v1, v2, v3;
 };
 
-class Viewer3DWidget : public QWidget
+class Viewer3DWidget 
 {
-	Q_OBJECT
 private:
+	ViewerWidget* vW;
 	QSize areaSize = QSize(0, 0);
 
 	std::vector<Vertex3D> vertices;   // zoznam vrcholov
@@ -41,7 +42,7 @@ private:
 	QVector<QVector<QColor>> FBuffer;
 
 public:
-	Viewer3DWidget(QSize widgetSize, QWidget* parent = Q_NULLPTR);
+	Viewer3DWidget(ViewerWidget* viewer);
 	~Viewer3DWidget();
 
 	void create_cube(double size);
@@ -68,5 +69,5 @@ public:
 
 
 public slots:
-	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;
+	void paint(QColor color = Qt::blue);
 };

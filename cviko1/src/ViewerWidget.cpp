@@ -623,7 +623,7 @@ void ViewerWidget::SlashObjects(double value, int index, QColor color)
 	update();
 }
 
-void ViewerWidget::ScanLine(QColor color)
+void ViewerWidget::ScanLinePolygon(QColor color)
 {
 	//POlYGON 
 	QVector<QPoint>& polygonPoints = getPolygonPoints();
@@ -778,102 +778,188 @@ void ViewerWidget::ScanLine(QColor color)
 	}
 }
 
-void ViewerWidget::FillTriangle(QColor color)
+void ViewerWidget::ScanLineTriangle(QVector<ColorVertex>& vertex, int index_method)
 {
-	QVector<QPoint> Triangle = getPolygonPoints();
-	int size_triang = Triangle.size();
+	if (vertex.size() != 3) return;
 
-	if (size_triang == 3)
+	QVector<ColorVertex> V = vertex;
+
+	for (int i = 0; i < 2; i++)    // sorting vrcholov podla y aby V[0] bola najvysiim
 	{
-		for (int i = 0; i < 2; i++)
+		for (int j = 0; j < 2 - i; j++) 
 		{
-			for (int j = 0; j < 2 - i; j++)
+			if (V[j].pos.y() > V[j + 1].pos.y()) 
 			{
-				if (Triangle[j].y() > Triangle[j + 1].y())
-				{
-					QPoint t = Triangle[j];
-					Triangle[j] = Triangle[j + 1];
-					Triangle[j + 1] = t;
-				}
+				std::swap(V[j], V[j + 1]);
 			}
 		}
-
-		if (Triangle[0].y() == Triangle[1].y())          // vrchneho trojuh neexist
-		{
-			double dy = Triangle[2].y() - Triangle[0].y();
-
-			if (dy != 0)
-			{
-				double w1 = (Triangle[2].x() - Triangle[0].x()) / dy; 
-				double w2 = (Triangle[2].x() - Triangle[1].x()) / dy;
-
-				double x1 = Triangle[0].x(), x2 = Triangle[1].x();
-				int y1 = Triangle[0].y(), y2 = Triangle[2].y();
-
-				for (int i = y1; i < y2; i++)
-				{
-					int x_start = qMin(qRound(x1), qRound(x2));
-					int x_end = qMax(qRound(x1), qRound(x2));
-
-					for (int x = x_start; x <= x_end; x++)
-					{
-						// Nearest Neighbor / Barycentrick?)
-							
-					}
-
-					x1 += w1;
-					x2 += w2;
-				}
-			}
-		} 
-		else if (Triangle[2].y() == Triangle[1].y())
-		{
-
-		}
-
-		double dy1 = Triangle[2].y() - Triangle[0].y();
-		double ma = 0;
-		if (dy1 != 0)
-		{
-			double dx1 = Triangle[2].x() - Triangle[0].x();
-			ma = dx1 / dy1;
-		}
-
-		double dy2 = Triangle[1].y() - Triangle[0].y();
-		double mb = 0;
-		if (dy2 != 0)
-		{
-			double dx2 = Triangle[1].x() - Triangle[0].x();
-			mb = dx2 / dy2;
-		}
-		
-		double dy3 = Triangle[2].y() - Triangle[1].y();
-		double mc = 0;
-		if (dy3 != 0)
-		{
-			double dx3 = Triangle[2].x() - Triangle[1].x();
-			mc = dx3 / dy3;
-		}
-		 
-		int y_start = Triangle[0].y();
-		int y_end = Triangle[2].y();
-
-		for (int i = y_start; i <= y_end; i++)
-		{
-
-		}
-
-		
-		//if ()
-		//{
-		//	double p = (Triangle[2].x() - Triangle[0].x()) / (Triangle[2].y() - Triangle[0].y());
-		//	double Px = Triangle[0].x() + (Triangle[1].y() - Triangle[0].y()) * p;
-		//	double Py = Triangle[1].y();
-
-		//	QPoint P(qRound(Px), qRound(Py));
-		//}
-
 	}
+
+	ColorVertex T0 = V[0];
+	ColorVertex T1 = V[1];
+	ColorVertex T2 = V[2];
+
+	if (T0.pos.y() == T2.pos.y()) return;
+	
+	double we1 = 0, we2 = 0;
+	double x1 = 0, x2 = 0;
+	
+	if (T0.pos.y() != T1.pos.y())                  // horna cast trojuholnika
+	{
+		double me1 = (double)(T1.pos.y() - T0.pos.y()) / (T1.pos.x() - T0.pos.x());  // strana e1
+		double me2 = (double)(T2.pos.y() - T0.pos.y()) / (T2.pos.x() - T0.pos.x());  // strana e2
+
+		double dx1 = T1.pos.x() - T0.pos.x();    // dlzka proj hrany na x
+		double dx2 = T2.pos.x() - T0.pos.x();
+
+		if (std::abs(dx1) < 1e-6)   // ked ortogonalna hran teda 0
+		{
+			we1 = 0.0; 
+		}
+		else 
+		{
+			we1 = 1.0 / me1; // w = 1/m
+		}
+
+		if (std::abs(dx2) < 1e-6) 
+		{
+			we2 = 0.0;
+		}
+		else {
+			we2 = 1.0 / me2;
+		}
+
+		x1 = T0.pos.x();   // zaciatocny body zbihaj u vrchole T0
+		x2 = T0.pos.x();
+
+		int start_y = T0.pos.y();
+		int end_y = T1.pos.y();
+
+		for (int y = start_y; y <= end_y; y++)
+		{
+			int start_x = qRound(std::min(x1, x2));
+			int end_x = qRound(std::max(x1, x2));
+
+			for (int x = start_x; x <= end_x; x++)
+			{
+				QColor pixelColor;
+
+				if (index_method == 0) 
+				{
+					pixelColor = getNearestNeighborColor(x, y, V);
+				}
+				else {
+					pixelColor = getBarycentricColor(x, y, V);
+				}
+				setPixel(x, y, pixelColor);
+			}
+			x1 += we1;
+			x2 += we2;
+		}
+	}
+
+	if (T1.pos.y() != T2.pos.y())  //spodna cast trojuholnika
+	{
+		double me1 = (double)(T2.pos.y() - T1.pos.y()) / (T2.pos.x() - T1.pos.x());
+		double me2 = (double)(T2.pos.y() - T0.pos.y()) / (T2.pos.x() - T0.pos.x());
+
+		we1 = (std::abs(T2.pos.x() - T1.pos.x()) < 1e-6) ? 0 : 1.0 / me1;
+		we2 = (std::abs(T2.pos.x() - T0.pos.x()) < 1e-6) ? 0 : 1.0 / me2;
+
+		x1 = T1.pos.x();
+
+		double dy_t2t0 = T2.pos.y() - T0.pos.y();
+		double dy_t1t0 = T1.pos.y() - T0.pos.y();
+		x2 = T0.pos.x() + dy_t1t0 * (T2.pos.x() - T0.pos.x()) / dy_t2t0;   // bod rozrezuu P
+
+		int start_y = T1.pos.y();
+		int end_y = T2.pos.y();
+
+		for (int y = start_y; y <= end_y; y++)
+		{
+			int start_x = qRound(std::min(x1, x2));
+			int end_x = qRound(std::max(x1, x2));
+
+			for (int x = start_x; x <= end_x; x++)
+			{
+				QColor pixelColor;
+				if (index_method == 0) {
+					pixelColor = getNearestNeighborColor(x, y, V);
+				}
+				else {
+					pixelColor = getBarycentricColor(x, y, V);
+				}
+				setPixel(x, y, pixelColor);
+			}
+			x1 += we1;
+			x2 += we2;
+		}
+	}
+	update();
+}
+
+QColor ViewerWidget::getNearestNeighborColor(int x, int y, QVector<ColorVertex>& vertex)
+{
+	QPoint T0 = vertex[0].pos;
+	QPoint T1 = vertex[1].pos;
+	QPoint T2 = vertex[2].pos;
+
+	double ux = T1.x() - T0.x(), uy = T1.y() - T0.y();
+	double vx = T2.x() - T0.x(), vy = T2.y() - T0.y();
+
+	double A = ux * vy - uy * vx; // plocha A
+	if (std::abs(A) < 1e-6) return vertex[0].color; // overenie delenia na 0 
+
+	double A0 = (T1.x() - x) * (T2.y() - y) - (T1.y() - y) * (T2.x() - x);         // Plocha PT1T2
+	double A1 = (x - T0.x()) * (T2.y() - T0.y()) - (y - T0.y()) * (T2.x() - T0.x());   // Plocha T0PT2
+	double A2 = (T1.x() - T0.x()) * (y - T0.y()) - (T1.y() - T0.y()) * (x - T0.x()); // Plocha T0T1P
+
+	double lambda0 = A0 / A;
+	double lambda1 = A1 / A;
+	double lambda2 = A2 / A;
+
+	if (lambda0 >= lambda1 && lambda0 >= lambda2) // vyber farby najblizceho vrchola za max weight lambdy
+	{
+		return vertex[0].color;
+	} 
+	else if (lambda1 >= lambda0 && lambda1 >= lambda2)
+	{
+		return vertex[1].color;
+	}
+	else {
+		return vertex[2].color;
+	}
+}
+
+QColor ViewerWidget::getBarycentricColor(int x, int y, QVector<ColorVertex>& vertex)
+{
+	QPoint T0 = vertex[0].pos;
+	QPoint T1 = vertex[1].pos;
+	QPoint T2 = vertex[2].pos;
+
+	double ux = T1.x() - T0.x(), uy = T1.y() - T0.y();
+	double vx = T2.x() - T0.x(), vy = T2.y() - T0.y();
+
+	double A = ux * vy - uy * vx;
+	if (std::abs(A) < 1e-6) return vertex[0].color;
+
+	double A0 = (T1.x() - x) * (T2.y() - y) - (T1.y() - y) * (T2.x() - x);
+	double A1 = (x - T0.x()) * (T2.y() - T0.y()) - (y - T0.y()) * (T2.x() - T0.x());
+	double A2 = (T1.x() - T0.x()) * (y - T0.y()) - (T1.y() - T0.y()) * (x - T0.x());
+
+	double lambda0 = A0 / A;
+	double lambda1 = A1 / A;
+	double lambda2 = A2 / A;
+
+	int r = lambda0 * vertex[0].color.red() + lambda1 * vertex[1].color.red() + lambda2 * vertex[2].color.red();
+	int g = lambda0 * vertex[0].color.green() + lambda1 * vertex[1].color.green() + lambda2 * vertex[2].color.green();
+	int b = lambda0 * vertex[0].color.blue() + lambda1 * vertex[1].color.blue() + lambda2 * vertex[2].color.blue();
+
+	r = qBound(0, r, 255);
+	g = qBound(0, g, 255);
+	b = qBound(0, b, 255);
+
+	return QColor(r, g, b);
 }
 
 //Slots

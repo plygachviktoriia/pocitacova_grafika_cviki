@@ -8,6 +8,10 @@ struct Side {          //vytvorenie structury podlia ukladanie udajov o stranach
 	double start_y;
 };
 
+struct ColorVertex {
+	QPoint pos;
+	QColor color;
+};
 
 class ViewerWidget :public QWidget {
 	Q_OBJECT
@@ -121,11 +125,12 @@ public:
 
 	void SlashObjects(double value, int index, QColor color);
 
-	void ScanLine(QColor color);
+	void ScanLinePolygon(QColor color);
 
-	void FillTriangle(QColor color);
-
-	//void CubeCreate(int value, QColor color);
+	void ScanLineTriangle(QVector<ColorVertex>& vertex, int index_method);
+	QColor getNearestNeighborColor(int x, int y, QVector<ColorVertex>& vertex);
+	QColor getBarycentricColor(int x, int y, QVector<ColorVertex>& vertex);
+	
 
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;

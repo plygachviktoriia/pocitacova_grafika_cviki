@@ -8,7 +8,7 @@ ImageViewer::ImageViewer(QWidget* parent)
 
 	vW = new ViewerWidget(QSize(500, 500), ui->scrollArea);
 	ui->scrollArea->setWidget(vW);
-	v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
+	v3D = new Viewer3DWidget(vW);
 
 	ui->comboBoxLineAlg->setCurrentIndex(0);          // DDA selected
 	ui->toolButtonDrawLine->setEnabled(true);      // Line is active
@@ -309,39 +309,55 @@ void ImageViewer::on_FillpushButton_clicked()
 {
 	if (!vW) return;
 
-	// POLYGON FILL
-
 	QVector<QPoint>& polygonPoints = vW->getPolygonPoints();
 	int size = polygonPoints.size();
 
-	if (size > 3)
+	if (size == 3)
 	{
-		vW->ScanLine(globalColor);
+		QVector<ColorVertex> triangleVertices(3);
+
+		triangleVertices[0].pos = polygonPoints[0];
+		triangleVertices[0].color = colorV1;
+
+		triangleVertices[1].pos = polygonPoints[1];
+		triangleVertices[1].color = colorV2; 
+
+		triangleVertices[2].pos = polygonPoints[2];
+		triangleVertices[2].color = colorV3;
+
+		int index_method = ui->FillcomboBox->currentIndex();
+		vW->ScanLineTriangle(triangleVertices, index_method);
+	}
+	else if (size > 3)
+	{
+		vW->ScanLinePolygon(globalColor);
 	}
 	vW->update();
 }
 
+
 void ImageViewer::on_createCube_clicked()
 {
-	if (ui->scrollArea->widget() != v3D) 
+	if (ui->scrollArea->widget() != vW) 
 	{
 		ui->scrollArea->takeWidget();
-		ui->scrollArea->setWidget(v3D);
+		ui->scrollArea->setWidget(vW);
 	}
 
 	int size = ui->cubeSizeSpinBox->value();
 
-	v3D->create_cube(size);  
-	v3D->update();
+	v3D->create_cube(size);
+	v3D->paint(Qt::blue);
+	vW->update();
 }
 
 // SPHERE
 void ImageViewer::on_createSphere_clicked()
 {
-	if (ui->scrollArea->widget() != v3D) 
+	if (ui->scrollArea->widget() != vW) 
 	{
 		ui->scrollArea->takeWidget();
-		ui->scrollArea->setWidget(v3D);
+		ui->scrollArea->setWidget(vW);
 	}
 
 	double radius = ui->RadiusSphereSpinBox->value();
@@ -349,7 +365,8 @@ void ImageViewer::on_createSphere_clicked()
 	int parallels = ui->ParallelsSphereSpinBox->value();
 
 	v3D->create_sphere(radius, medians, parallels);
-	v3D->update();
+	v3D->paint(Qt::blue);
+	vW->update();
 }
 
 // CAMERA 
@@ -413,7 +430,7 @@ void ImageViewer::on_actionOpen_triggered()
 	QFileInfo fi(fileName);
 	settings.setValue("folder_img_load_path", fi.absoluteDir().absolutePath());
 
-	if (fi.suffix().toLower() == "vtk")
+	/*if (fi.suffix().toLower() == "vtk")
 	{
 		if (!v3D) {
 			v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
@@ -426,15 +443,14 @@ void ImageViewer::on_actionOpen_triggered()
 
 		v3D->LoadVTK(fileName.toStdString()); 
 		v3D->update(); 
-	}
-	else
-	{
+	}*/
+	if (fi.suffix().toLower() == "vtk") {
 		if (ui->scrollArea->widget() != vW) {
 			ui->scrollArea->takeWidget();
 			ui->scrollArea->setWidget(vW);
 		}
 
-		if (!openImage(fileName)) { 
+		if (!openImage(fileName)) {
 			msgBox.setText("Unable to open image.");
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.exec();

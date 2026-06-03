@@ -12,7 +12,10 @@ class ImageViewer : public QMainWindow
 
 public:
 	ImageViewer(QWidget* parent = Q_NULLPTR);
-	~ImageViewer() { delete ui; }
+	~ImageViewer() {
+		delete ui;
+		delete v3D;
+	}
 private:
 	Ui::ImageViewerClass* ui;
 	ViewerWidget* vW;

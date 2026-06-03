@@ -1,17 +1,14 @@
 #include "Viewer3DWidget.h"
 #include <cmath>
 #include <fstream>
-#include <QPainter>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-Viewer3DWidget::Viewer3DWidget(QSize widgetSize, QWidget* parent)
-	: QWidget(parent)
+Viewer3DWidget::Viewer3DWidget(ViewerWidget* viewer)
+	: vW(viewer)
 {
-	setAttribute(Qt::WA_StaticContents);
-	this->resize(widgetSize);
 }
 
 Viewer3DWidget::~Viewer3DWidget() {}
@@ -79,38 +76,32 @@ void Viewer3DWidget::LoadVTK(const std::string& path)
 			}
 		}
 	}
-	update();
+	vW->update();
 }
 
 QPointF Viewer3DWidget::revert_3d(Vertex3D& v)
 {
-	double centerX = width() / 2.0;
-	double centerY = height() / 2.0;
-
-	double x_2d = centerX + v.x;
-	double y_2d = centerY - v.y;      // aby objekt vyzeral spravne
-
-	return QPointF(x_2d, y_2d);
+	Vertex3D view = view_coordinates(v);
+	Vertex3D proj = projekcia(view);
+	return QPointF(proj.x, proj.y);
 }
 
 // Slots
-void Viewer3DWidget::paintEvent(QPaintEvent* event)
+void Viewer3DWidget::paint(QColor color)
 {
-	QPainter painter(this);
-	painter.fillRect(rect(), Qt::white);
-
 	for (size_t i = 0; i < triangles.size(); ++i) 
 	{
 		const Triangle& t = triangles[i];
 
-		QPointF p1 = revert_3d(vertices[t.v1]);
-		QPointF p2 = revert_3d(vertices[t.v2]);
-		QPointF p3 = revert_3d(vertices[t.v3]);
+		QPoint p1 = revert_3d(vertices[t.v1]).toPoint();
+		QPoint p2 = revert_3d(vertices[t.v2]).toPoint();
+		QPoint p3 = revert_3d(vertices[t.v3]).toPoint();
 
-		painter.drawLine(p1, p2);
-		painter.drawLine(p2, p3);
-		painter.drawLine(p3, p1);
+		vW->drawLineDDA(p1, p2, color);
+		vW->drawLineDDA(p2, p3, color);
+		vW->drawLineDDA(p3, p1, color);
 	}
+	vW->update();
 }
 
 // CREATE CUBE
@@ -155,7 +146,7 @@ void Viewer3DWidget::create_cube(double size)
 	triangles.push_back({ 0, 1, 5 });
 	triangles.push_back({ 0, 5, 4 });
 
-	update();
+	vW->update();
 }
 
 // SPHERE
@@ -195,7 +186,7 @@ void Viewer3DWidget::create_sphere(double radius, int medians, int parallels)
 			triangles.push_back({ top_right, bottom_left, bottom_right });
 		}
 	}
-	update();
+	vW->update();
 }
 
 void Viewer3DWidget::setTetha(double t)
@@ -214,7 +205,7 @@ void Viewer3DWidget::setTetha(double t)
 	camera_v.y = camera_u.z * camera_n.x - camera_u.x * camera_n.z;
 	camera_v.z = camera_u.x * camera_n.y - camera_u.y * camera_n.x;
 
-	update();
+	vW->update();
 }
 
 void Viewer3DWidget::setPhi(double p)
@@ -226,19 +217,19 @@ void Viewer3DWidget::setPhi(double p)
 void Viewer3DWidget::projectionType(int type)
 {
 	proj_type = type;
-	update();
+	vW->update();
 }
 
 void Viewer3DWidget::setWireframe(bool w) 
 { 
 	wireframe = w; 
-	update();
+	vW->update();
 }
 
 void Viewer3DWidget::setSz(double sz) 
 { 
 	Sz = sz;      
-	update(); 
+	vW->update();
 }
 
 double Viewer3DWidget::scalar(Vertex3D& a, Vertex3D& b)
@@ -248,8 +239,8 @@ double Viewer3DWidget::scalar(Vertex3D& a, Vertex3D& b)
 
 Vertex3D Viewer3DWidget::view_coordinates(Vertex3D& v)
 {
-	double x = scalar(v, camera_v);
-	double y = scalar(v, camera_u);
+	double x = scalar(v, camera_u);
+	double y = scalar(v, camera_v);
 	double z = scalar(v, camera_n);
 
 	return { x, y, z };
@@ -257,8 +248,8 @@ Vertex3D Viewer3DWidget::view_coordinates(Vertex3D& v)
 
 Vertex3D Viewer3DWidget::projekcia(Vertex3D& proj)
 {
-	double centred_X = width() / 2.0;
-	double centred_Y = height() / 2.0;
+	double centred_X = vW->getImage()->width() / 2.0;
+	double centred_Y = vW->getImage()->height() / 2.0;
 
 	double proj_X, proj_Y, proj_Z;
 	if (proj_type == 0)   // rovnobezne pravouhle premetanie do roviny xy
@@ -285,8 +276,8 @@ Vertex3D Viewer3DWidget::projekcia(Vertex3D& proj)
 
 void Viewer3DWidget::buffers()
 {
-	int w = width();
-	int h = height();
+	int w = vW->getImage()->width();
+	int h = vW->getImage()->height();
 
 	ZBuffer.resize(h);         // zmena rozmerov bufferov podla obrazobky
 	FBuffer.resize(h);
