@@ -282,3 +282,26 @@ Vertex3D Viewer3DWidget::projekcia(Vertex3D& proj)
 
 	return Vertex3D(x_projected, y_projected, z_projected);
 }
+
+void Viewer3DWidget::buffers()
+{
+	int w = width();
+	int h = height();
+
+	ZBuffer.resize(h);         // zmena rozmerov bufferov podla obrazobky
+	FBuffer.resize(h);
+	for (int i = 0; i < h; i++)
+	{
+		ZBuffer[i].resize(w);
+		FBuffer[i].resize(w);
+	}
+
+	for (int i = 0; i < h; i++)
+	{
+		for (int j = 0; j < w; j++)
+		{
+			ZBuffer[i][j] = -1e18;       // nastavenie na nekonecnost 
+			FBuffer[i][j] = Qt::white;   
+		}
+	}
+}

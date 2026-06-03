@@ -37,6 +37,9 @@ private:
 	bool wireframe = true;
 	double Sz = 10;
 
+	QVector<QVector<double>> ZBuffer;
+	QVector<QVector<QColor>> FBuffer;
+
 public:
 	Viewer3DWidget(QSize widgetSize, QWidget* parent = Q_NULLPTR);
 	~Viewer3DWidget();
@@ -47,6 +50,7 @@ public:
 	double scalar(Vertex3D& a, Vertex3D& b);
 	Vertex3D view_coordinates(Vertex3D& v);
 	Vertex3D projekcia(Vertex3D& proj);
+	void buffers();
 
 	//SAVE IN FILE
 	void SaveVTK(const std::string& path);
