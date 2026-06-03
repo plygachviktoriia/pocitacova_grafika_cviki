@@ -260,19 +260,25 @@ Vertex3D Viewer3DWidget::projekcia(Vertex3D& proj)
 	double centred_X = width() / 2.0;
 	double centred_Y = height() / 2.0;
 
+	double proj_X, proj_Y, proj_Z;
 	if (proj_type == 0)   // rovnobezne pravouhle premetanie do roviny xy
 	{
-		double proj_X = proj.x;
-		double proj_Y = proj.y;
-		double proj_Z = 0;
+		proj_X = proj.x;
+		proj_Y = proj.y;
+		proj_Z = proj.z;
 	}
 	else {              // perspectivne, stred premitanie sur (0, 0, Sz) - proj do roviny z = dz
 		double menovatel = Sz - proj.z;
 		if (std::abs(menovatel) < 1e-6) menovatel = 1e-6;  // podmienka na bezpecnost delenia 
 		
-		double proj_X = Sz * proj.x / menovatel;
-		double proj_Y = Sz * proj.y / menovatel;
-		double proj_Z = 0;
+		proj_X = Sz * proj.x / menovatel;
+		proj_Y = Sz * proj.y / menovatel;
+		proj_Z = proj.z;
 	}
 
+	double x_projected = centred_X + proj_X;
+	double y_projected = centred_Y - proj_Y;
+	double z_projected = proj_Z;
+
+	return Vertex3D(x_projected, y_projected, z_projected);
 }

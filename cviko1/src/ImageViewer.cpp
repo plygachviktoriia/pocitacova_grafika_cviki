@@ -6,9 +6,9 @@ ImageViewer::ImageViewer(QWidget* parent)
 {
 	ui->setupUi(this);
 
-	vW = new ViewerWidget(QSize(700, 700), ui->scrollArea);
+	vW = new ViewerWidget(QSize(500, 500), ui->scrollArea);
 	ui->scrollArea->setWidget(vW);
-	v3D = new Viewer3DWidget(QSize(700, 700), ui->scrollArea);
+	v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
 
 	ui->comboBoxLineAlg->setCurrentIndex(0);          // DDA selected
 	ui->toolButtonDrawLine->setEnabled(true);      // Line is active
@@ -416,7 +416,7 @@ void ImageViewer::on_actionOpen_triggered()
 	if (fi.suffix().toLower() == "vtk")
 	{
 		if (!v3D) {
-			v3D = new Viewer3DWidget(QSize(700, 700), ui->scrollArea);
+			v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
 		}
 
 		if (ui->scrollArea->widget() != v3D) {
@@ -424,17 +424,17 @@ void ImageViewer::on_actionOpen_triggered()
 			ui->scrollArea->setWidget(v3D);
 		}
 
-		v3D->LoadVTK(fileName.toStdString()); //[cite: 12]
-		v3D->update(); // Ïåðåìàëüîâóºìî ÁÅÇ v3D->show()
+		v3D->LoadVTK(fileName.toStdString()); 
+		v3D->update(); 
 	}
 	else
 	{
 		if (ui->scrollArea->widget() != vW) {
 			ui->scrollArea->takeWidget();
-			ui->scrollArea->setWidget(vW); //[cite: 10]
+			ui->scrollArea->setWidget(vW);
 		}
 
-		if (!openImage(fileName)) { //[cite: 10]
+		if (!openImage(fileName)) { 
 			msgBox.setText("Unable to open image.");
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.exec();
