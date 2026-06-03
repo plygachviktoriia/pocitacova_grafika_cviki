@@ -21,13 +21,15 @@ private:
 	std::vector<Triangle> triangles;
 
 	double cube_size = 10.0;
+	double sphere_radius = 10.0;
 
 public:
 	Viewer3DWidget(QSize widgetSize, QWidget* parent = Q_NULLPTR);
 	~Viewer3DWidget();
 
 	void create_cube(double size);
-	void create_sphere(double radius);
+	void create_sphere(double radius, int medians, int parallels);
+	QPointF revert_3d(const Vertex3D& v);        //prevod 3d obrazku v 2d
 
 	//SAVE IN FILE
 	void SaveVTK(const std::string& path);
@@ -36,10 +38,6 @@ public:
 	//GETTER / SETTER
 	std::vector<Vertex3D>& getVertices() { return vertices; }
 	std::vector<Triangle>& getTriangles() { return triangles; }
-	double getCubeSize() const { return cube_size; }
-	void setCubeSize(double size) { cube_size = size; }
-
-	QPointF revert_3d(const Vertex3D& v);
 
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;

@@ -6,14 +6,14 @@ ImageViewer::ImageViewer(QWidget* parent)
 {
 	ui->setupUi(this);
 
+	vW = new ViewerWidget(QSize(700, 700), ui->scrollArea);
+	ui->scrollArea->setWidget(vW);
+	v3D = new Viewer3DWidget(QSize(700, 700), ui->scrollArea);
+
 	ui->comboBoxLineAlg->setCurrentIndex(0);          // DDA selected
 	ui->toolButtonDrawLine->setEnabled(true);      // Line is active
 	ui->toolButtonDrawLine->setChecked(true);
 	ui->CircletoolButton->setEnabled(false);
-
-	vW = new ViewerWidget(QSize(500, 500), ui->scrollArea);
-	ui->scrollArea->setWidget(vW);
-	v3D = nullptr;
 
 	ui->scrollArea->setBackgroundRole(QPalette::Dark);
 	ui->scrollArea->setWidgetResizable(false);
@@ -321,34 +321,34 @@ void ImageViewer::on_FillpushButton_clicked()
 	vW->update();
 }
 
-void ImageViewer::on_pushButtonOK_clicked()
+void ImageViewer::on_createCube_clicked()
 {
-	if (!v3D) {
-		v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
-	}
-
-	if (ui->scrollArea->widget() != v3D) {
-		ui->scrollArea->takeWidget();  
-		ui->scrollArea->setWidget(v3D); 
-	}
-
-	double size = ui->spinBoxCube->value();
-	v3D->create_cube(size);
-
-	QString fileName = QFileDialog::getSaveFileName(this, "Çáåğåãòè 3D êóá", QDir::currentPath() + "/cube.vtk", "VTK Files (*.vtk)");
-
-	if (!fileName.isEmpty())
+	if (ui->scrollArea->widget() != v3D) 
 	{
-		std::string filePath = fileName.toStdString();
-		v3D->SaveVTK(filePath); // Çáåğ³ãàºìî[cite: 12]
-
-		v3D->getVertices().clear();
-		v3D->getTriangles().clear();
-
-		v3D->LoadVTK(filePath);
-
-		v3D->update();
+		ui->scrollArea->takeWidget();
+		ui->scrollArea->setWidget(v3D);
 	}
+
+	int size = ui->cubeSizeSpinBox->value();
+
+	v3D->create_cube(size);  
+	v3D->update();
+}
+
+void ImageViewer::on_createSphere_clicked()
+{
+	if (ui->scrollArea->widget() != v3D) 
+	{
+		ui->scrollArea->takeWidget();
+		ui->scrollArea->setWidget(v3D);
+	}
+
+	double radius = ui->RadiusSphereSpinBox->value();
+	int medians = ui->MerediansSphereSpinBox->value();
+	int parallels = ui->ParallelsSphereSpinBox->value();
+
+	v3D->create_sphere(radius, medians, parallels);
+	v3D->update();
 }
 
 //ImageViewer Events
@@ -396,9 +396,8 @@ void ImageViewer::on_actionOpen_triggered()
 
 	if (fi.suffix().toLower() == "vtk")
 	{
-		// Ñòâîğşºìî, ÿêùî íåìàº
 		if (!v3D) {
-			v3D = new Viewer3DWidget(QSize(500, 500), ui->scrollArea);
+			v3D = new Viewer3DWidget(QSize(700, 700), ui->scrollArea);
 		}
 
 		if (ui->scrollArea->widget() != v3D) {

@@ -16,87 +16,81 @@ Viewer3DWidget::Viewer3DWidget(QSize widgetSize, QWidget* parent)
 
 Viewer3DWidget::~Viewer3DWidget() {}
 
-// LOAD / SAVE FILE
+// SAVE FILE
 void Viewer3DWidget::SaveVTK(const std::string& path)
 {
-	std::ofstream save(path);
-	if (!save.is_open()) return;
+	std::ofstream out(path);
+	if (!out.is_open()) return;
 
-	save << "# vtk DataFile Version 3.0\n"
-		<< "geometry\n"
+	out << "# vtk DataFile Version 3.0\n"
+		<< "vtk output\n"
 		<< "ASCII\n"
 		<< "DATASET POLYDATA\n"
 		<< "POINTS " << vertices.size() << " double\n";
 
-	for (size_t i = 0; i < vertices.size(); ++i)
+	for (size_t i = 0; i < vertices.size(); i++)       // zapis vrcholov
 	{
-		const Vertex3D& v = vertices[i];
-		save << v.x << " " << v.y << " " << v.z << "\n";
+		out << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << "\n";
 	}
 
-	save << "POLYGONS " << triangles.size() << " " << triangles.size() * 4 << "\n";
+	out << "POLYGONS " << triangles.size() << " " << triangles.size() * 4 << "\n";
 
-	for (size_t i = 0; i < triangles.size(); ++i)
+	for (size_t i = 0; i < triangles.size(); i++)     //zapis polygonov
 	{
-		const Triangle& t = triangles[i];
-		save << "3 " << t.v1 << " " << t.v2 << " " << t.v3 << "\n";
+		out << "3 " << triangles[i].v1 << " " << triangles[i].v2 << " " << triangles[i].v3 << "\n";
 	}
 }
 
+// FILE LOAD
 void Viewer3DWidget::LoadVTK(const std::string& path)
 {
-	std::ifstream load(path);
-	if (!load.is_open()) return;
+	std::ifstream in(path);
+	if (!in.is_open()) return;
 
 	vertices.clear();
 	triangles.clear();
 
 	std::string word;
-	while (load >> word)
+
+	while (in >> word)
 	{
 		if (word == "POINTS")
 		{
-			size_t count;
+			int count; 
 			std::string type;
+			in >> count >> type;        // citanie vrcholov a ich typ
+			vertices.resize(count);
 
-			load >> count >> type;
-
-			for (size_t i = 0; i < count; i++)
+			for (int i = 0; i < count; ++i)
 			{
-				double x, y, z;
-				load >> x >> y >> z;
-				vertices.push_back({ x, y, z });
+				in >> vertices[i].x >> vertices[i].y >> vertices[i].z;     // citanie sur podla kazdeho bodu a zapis vo vektor
 			}
 		}
 		else if (word == "POLYGONS")
 		{
-			size_t count;
-			size_t total_numbers;
+			int count, total;
+			in >> count >> total;     // citanie polygonov a pocet
 
-			load >> count >> total_numbers;
-
-			for (size_t i = 0; i < count; i++)
+			for (int i = 0; i < count; i++)
 			{
-				int vertex_count;
-				int v1, v2, v3;
-
-				load >> vertex_count >> v1 >> v2 >> v3;
-				triangles.push_back({ v1, v2, v3 });
+				int n, v1, v2, v3;
+				in >> n >> v1 >> v2 >> v3;    //citanie pocetu vrcholov a indexy
+				if (n == 3) triangles.push_back({ v1, v2, v3 });
 			}
 		}
 	}
+	update();
 }
 
 QPointF Viewer3DWidget::revert_3d(const Vertex3D& v)
 {
-	double x_half = width() / 2.0;
-	double y_half = height() / 2.0;
-	double scale = 10.0;
+	double centerX = width() / 2.0;
+	double centerY = height() / 2.0;
 
-	double x2d = x_half + (v.x - v.z) * 0.866 * scale; // 0.866 = cos(pi/6)
-	double y2d = y_half - v.y * scale + (v.x + v.z) * 0.5 * scale * 0.5; // 0.5 = sin(pi/6)
+	double x_2d = centerX + v.x;
+	double y_2d = centerY - v.y;      // aby objekt vyzeral spravne
 
-	return QPointF(x2d, y2d);
+	return QPointF(x_2d, y_2d);
 }
 
 // Slots
@@ -105,7 +99,8 @@ void Viewer3DWidget::paintEvent(QPaintEvent* event)
 	QPainter painter(this);
 	painter.fillRect(rect(), Qt::white);
 
-	for (size_t i = 0; i < triangles.size(); ++i) {
+	for (size_t i = 0; i < triangles.size(); ++i) 
+	{
 		const Triangle& t = triangles[i];
 
 		QPointF p1 = revert_3d(vertices[t.v1]);
@@ -121,28 +116,84 @@ void Viewer3DWidget::paintEvent(QPaintEvent* event)
 // CREATE CUBE
 void Viewer3DWidget::create_cube(double size)
 {
-	cube_size = size;
-	double s = size / 2.0;
+	vertices.clear();
+	triangles.clear();
 
-	vertices = {
-		{-s, +s, -s},
-		{+s, +s, -s},
-		{+s, -s, -s},
-		{-s, -s, -s},
-		{-s, +s, +s},
-		{+s, +s, +s},
-		{+s, -s, +s},
-		{-s, -s, +s}
-	};
+	double s = size / 2.0;         // aby on bol odcentrovany
 
-	triangles = {
-		{0, 1, 2}, {0, 2, 3}, // zadna
-		{5, 4, 7}, {5, 7, 6}, // predna
-		{4, 0, 3}, {4, 3, 7}, // lava
-		{1, 5, 6}, {1, 6, 2}, // prava
-		{4, 5, 1}, {4, 1, 0}, // horna
-		{3, 2, 6}, {3, 6, 7}  // dolna
-	};
+	// zapis vrcholob
+	vertices.push_back({ -s, -s, -s });  // 0
+	vertices.push_back({ s, -s, -s });  // 1
+	vertices.push_back({ s,  s, -s });  // 2
+	vertices.push_back({ -s,  s, -s });  // 3
+	vertices.push_back({ -s, -s,  s });  // 4
+	vertices.push_back({ s, -s,  s });  // 5
+	vertices.push_back({ s,  s,  s });  // 6
+	vertices.push_back({ -s,  s,  s }); // 7
 
+	// front strana  z = + s
+	triangles.push_back({ 4, 5, 6 });
+	triangles.push_back({ 4, 6, 7 });
+
+	// zadna strana  z = - s
+	triangles.push_back({ 1, 0, 3 });
+	triangles.push_back({ 1, 3, 2 });
+
+	// lava strana  x = - s 
+	triangles.push_back({ 0, 4, 7 });
+	triangles.push_back({ 0, 7, 3 });
+
+	// prava strana  x = + s  
+	triangles.push_back({ 5, 1, 2 });
+	triangles.push_back({ 5, 2, 6 });
+
+	// horna  y = + s
+	triangles.push_back({ 7, 6, 2 });
+	triangles.push_back({ 7, 2, 3 });
+
+	//dolna  y = - s
+	triangles.push_back({ 0, 1, 5 });
+	triangles.push_back({ 0, 5, 4 });
+
+	update();
+}
+
+// SPHERE
+void Viewer3DWidget::create_sphere(double radius, int medians, int parallels)
+{
+	vertices.clear();
+	triangles.clear();
+
+	for (int i = 0; i <= parallels; i++)
+	{
+		double theta = i * M_PI / parallels;  
+
+		for (int j = 0; j <= medians; j++)
+		{
+			double phi = j * 2.0 * M_PI / medians;
+
+			double x = radius * std::sin(theta) * std::cos(phi);
+			double y = radius * std::cos(theta);
+			double z = radius * std::sin(theta) * std::sin(phi);
+
+			vertices.push_back({ x, y, z });
+		}
+	}
+
+	int cols = medians + 1;  // kruznici navkolo sphery
+
+	for (int i = 0; i < parallels; i++)
+	{
+		for (int j = 0; j < medians; j++)
+		{
+			int top_left = i * cols + j;       // horny lavy bod
+			int top_right = i * cols + j + 1;   // horny pravy
+			int bottom_left = (i + 1) * cols + j;     // spodny lavy
+			int bottom_right = (i + 1) * cols + j + 1;   // spodny pravy
+
+			triangles.push_back({ top_left, bottom_left, top_right });
+			triangles.push_back({ top_right, bottom_left, bottom_right });
+		}
+	}
 	update();
 }

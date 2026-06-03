@@ -69,5 +69,6 @@ private slots:
 	void on_T3pushButtonColor_clicked();
 
 	// 3D
-	void on_pushButtonOK_clicked();
+	void on_createCube_clicked();
+	void on_createSphere_clicked();
 };
