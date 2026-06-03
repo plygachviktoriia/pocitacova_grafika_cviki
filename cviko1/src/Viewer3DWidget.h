@@ -11,13 +11,6 @@ struct Triangle {
 	int v1, v2, v3;
 };
 
-struct Face {
-	Triangle tri1;
-	Triangle tri2;
-	QColor color;
-	double avgZ; 
-};
-
 class Viewer3DWidget : public QWidget
 {
 	Q_OBJECT
@@ -38,6 +31,8 @@ private:
 	Vertex3D camera_u = { 1, 0, 0 };
 	Vertex3D camera_v = { 0, 1, 0 };
 
+	int  proj_type = 0;
+
 public:
 	Viewer3DWidget(QSize widgetSize, QWidget* parent = Q_NULLPTR);
 	~Viewer3DWidget();
@@ -54,6 +49,10 @@ public:
 	//GETTER / SETTER
 	std::vector<Vertex3D>& getVertices() { return vertices; }
 	std::vector<Triangle>& getTriangles() { return triangles; }
+
+	void setTetha(double t);
+	void setPhi(double p);
+	void projectionType(int type);
 
 public slots:
 	void paintEvent(QPaintEvent* event) Q_DECL_OVERRIDE;

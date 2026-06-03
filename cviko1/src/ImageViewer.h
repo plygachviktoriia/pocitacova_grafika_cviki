@@ -71,4 +71,9 @@ private slots:
 	// 3D
 	void on_createCube_clicked();
 	void on_createSphere_clicked();
+
+	void on_ApplyProjectionpushButton_clicked();
+	void on_ZenithorizontalSlider_valueChanged(int value);
+	void on_AzimuthorizontalSlider_valueChanged(int value);
+
 };

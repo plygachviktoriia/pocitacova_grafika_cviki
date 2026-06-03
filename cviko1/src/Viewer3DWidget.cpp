@@ -198,17 +198,33 @@ void Viewer3DWidget::create_sphere(double radius, int medians, int parallels)
 	update();
 }
 
-void Viewer3DWidget::camera()
+void Viewer3DWidget::setTetha(double t)
 {
-	camera_n.x = std::sin(theta) * std::sin(phi);
+	theta = t;
+
+	camera_n.x = std::sin(theta) * std::sin(phi);       // normalovy vektor premetnie
 	camera_n.y = std::sin(theta) * std::cos(phi);
 	camera_n.z = std::cos(theta);
 
-	camera_u.x = std::sin(theta + M_PI / 2.0) * std::sin(phi);
+	camera_u.x = std::sin(theta + M_PI / 2.0) * std::sin(phi);   // orientacia kamery hore
 	camera_u.y = std::sin(theta + M_PI / 2.0) * std::cos(phi);
 	camera_u.z = std::cos(theta + M_PI / 2.0);
 
-	camera_v.x = camera_u.y * camera_n.z - camera_u.z * camera_n.y;
+	camera_v.x = camera_u.y * camera_n.z - camera_u.z * camera_n.y;  // sucin  n * u
 	camera_v.y = camera_u.z * camera_n.x - camera_u.x * camera_n.z;
 	camera_v.z = camera_u.x * camera_n.y - camera_u.y * camera_n.x;
+
+	update();
+}
+
+void Viewer3DWidget::setPhi(double p)
+{
+	phi = p;
+	setTetha(theta);
+}
+
+void Viewer3DWidget::projectionType(int type)
+{
+	proj_type = type;
+	update();
 }

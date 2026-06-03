@@ -335,6 +335,7 @@ void ImageViewer::on_createCube_clicked()
 	v3D->update();
 }
 
+// SPHERE
 void ImageViewer::on_createSphere_clicked()
 {
 	if (ui->scrollArea->widget() != v3D) 
@@ -349,6 +350,24 @@ void ImageViewer::on_createSphere_clicked()
 
 	v3D->create_sphere(radius, medians, parallels);
 	v3D->update();
+}
+
+// CAMERA 
+void ImageViewer::on_ApplyProjectionpushButton_clicked()
+{
+
+}
+
+void ImageViewer::on_AzimuthorizontalSlider_valueChanged(int value)
+{
+	double phi = value * M_PI / 180.0;      // prevod v radiany
+	v3D->setPhi(phi);
+}
+
+void ImageViewer::on_ZenithorizontalSlider_valueChanged(int value)
+{
+	double theta = value * M_PI / 180.0;
+	v3D->setTetha(theta);
 }
 
 //ImageViewer Events
